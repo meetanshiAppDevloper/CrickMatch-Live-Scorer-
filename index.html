@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+    <meta charset="UTF-8">
+    <title>Live Cricket Score</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* CSS માં કોઈ ફેરફાર નથી */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f6f9; color: #1c1c1e; margin: 0; }
+        .container { max-width: 500px; margin: 0 auto; }
+        h2 { color: #007aff; font-weight: 600; }
+        .scoreboard { border: 1px solid #e0e0e0; padding: 20px; border-radius: 16px; margin: 20px 0; background-color: #ffffff; box-shadow: 0 8px 16px rgba(0,0,0,0.08); }
+        .team-score { display: flex; justify-content: space-between; align-items: center; }
+        .team-name { font-size: 24px; font-weight: bold; text-align: left; }
+        .score { font-size: 32px; font-weight: 700; color: #000; }
+        .overs { font-size: 16px; color: #6c6c70; text-align: left; margin-top: 4px; }
+        .batsman-container { margin-top: 15px; }
+        .batsman { display: flex; justify-content: space-between; margin-top: 10px; font-size: 17px; }
+        .batsman-name { font-weight: 500; }
+        .batsman-score { font-weight: 400; color: #3c3c43; }
+        .bowler { text-align: left; margin-top: 15px; font-size: 17px; }
+        #loading { font-size: 18px; color: #007aff; margin-top: 40px; }
+        #error { display: none; color: #ff3b30; font-weight: bold; margin-top: 40px; }
+        hr { border: 0; border-top: 1px solid #eef0f3; margin: 20px 0; }
+        .this-over-section { text-align: left; margin-top: 15px; }
+        .this-over-label { font-size: 17px; font-weight: 500; margin-bottom: 10px; }
+        #thisOverContainer { display: flex; gap: 8px; flex-wrap: wrap; }
+        .ball-event { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; color: #333; background-color: #f0f0f0; border: 1px solid #ccc; }
+        .ball-four { background-color: #34c759; color: white; border: none; }
+        .ball-six { background-color: #5856d6; color: white; border: none; }
+        .ball-wicket { background-color: #ff3b30; color: white; border: none; }
+        .ball-extra { background-color: #ff9500; color: white; border: none; font-size: 12px; }
+        .action-button { display: inline-block; margin-top: 20px; padding: 14px 28px; background-color: #007aff; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 18px; border: none; cursor: pointer; transition: background-color 0.2s; }
+        .action-button:hover { background-color: #0056b3; }
+        #debug-info { padding: 10px; font-weight: bold; margin-bottom: 15px; border-radius: 8px; }
+        .debug-success { background-color: #d4edda; color: #155724; }
+        .debug-error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- આ નવો વિભાગ છે જે ચકાસણી માટે ઉમેર્યો છે -->
+        <div id="debug-info"></div>
+
+        <h2>Live Cricket Score</h2>
+        <div id="scoreboard" class="scoreboard" style="display: none;">
+             <div class="team-score"> <span id="battingTeamName" class="team-name">--</span> <span id="score" class="score">0/0</span> </div>
+             <div id="overs" class="overs">(0.0 Overs)</div> <hr>
+             <div class="batsman-container"> <div class="batsman"> <span class="batsman-name"><b id="strikerName">Batsman 1</b>*</span> <span id="strikerScore" class="batsman-score">0 (0)</span> </div> <div class="batsman"> <span class="batsman-name"><b id="nonStrikerName">Batsman 2</b></span> <span id="nonStrikerScore" class="batsman-score">0 (0)</span> </div> </div>
+             <div class="bowler"> <span><b>Bowler:</b> <span id="bowlerName">--</span></span> </div> <hr>
+             <div class="this-over-section"> <div class="this-over-label">This Over:</div> <div id="thisOverContainer"></div> </div>
+        </div>
+        
+        <div id="loading">Waiting for Match ID...</div>
+        <div id="error"></div>
+
+        <button id="open-app-btn" class="action-button" style="display: none;">Open in App</button>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script>
+        (function () {
+            const debugDiv = document.getElementById('debug-info');
+            
+            // --- 1. URL માંથી મેચ ID મેળવવાનો પ્રયાસ ---
+            const urlParams = new URLSearchParams(window.location.search);
+            const matchId = urlParams.get('matchId');
+            
+            if (!matchId) {
+                // જો ID ન મળે તો સ્ક્રીન પર બતાવો
+                debugDiv.textContent = 'Debug Info: ERROR! Match ID was not found in the URL.';
+                debugDiv.className = 'debug-error';
+                showError('Error: Match ID not found in the link.');
+                return;
+            }
+
+            // જો ID મળે તો સ્ક્રીન પર બતાવો
+            debugDiv.textContent = `Debug Info: Match ID found: ${matchId}`;
+            debugDiv.className = 'debug-success';
+            document.getElementById('loading').textContent = 'Loading live score...';
+
+            // --- 2. ફાયરબેઝ અને બાકીનો કોડ શરૂ કરો ---
+            const firebaseConfig = {
+                apiKey: "AIzaSyD3SPFa6b4vg5lwHK9hm7tJuyi-9xTroGI",
+                authDomain: "cricket-scorer-app-a9d37.firebaseapp.com",
+                projectId: "cricket-scorer-app-a-9d37",
+                storageBucket: "cricket-scorer-app-a9d37.appspot.com",
+                messagingSenderId: "533428996475",
+                appId: "1:533428996475:web:58161d5066d65ad2dd15de",
+                measurementId: "G-DQP2DZY5E5"
+            };
+            firebase.initializeApp(firebaseConfig);
+            const db = firebase.firestore();
+
+            const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch';
+            const appUri = `cricketscorer://match?id=${matchId}`;
+            const openAppBtn = document.getElementById('open-app-btn');
+            openAppBtn.style.display = 'inline-block';
+            openAppBtn.addEventListener('click', function() {
+                window.location.href = appUri;
+                setTimeout(() => { if (!document.hidden) { window.location.href = playStoreUrl; } }, 2500);
+            });
+
+            const matchRef = db.collection('matches').doc(matchId);
+            matchRef.onSnapshot((matchDoc) => {
+                if (matchDoc.exists) {
+                    const matchData = matchDoc.data();
+                    const inningsRef = matchRef.collection('innings').doc(String(matchData.currentInnings || 1));
+                    inningsRef.onSnapshot((inningsDoc) => {
+                        if (inningsDoc.exists) {
+                            document.getElementById('loading').style.display = 'none';
+                            document.getElementById('scoreboard').style.display = 'block';
+                            updateScoreboard(matchData, inningsDoc.data());
+                        } else { showError(`Innings data not found.`); }
+                    }, (error) => showError('Error loading live score.'));
+                } else { showError('Match with the given ID was not found.'); }
+            }, (error) => showError('Could not connect to Firebase.'));
+        })(); 
+
+        function showError(message) {
+            document.getElementById('loading').style.display = 'none';
+            const errorDiv = document.getElementById('error');
+            errorDiv.innerText = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function updateScoreboard(matchData, inningsData) {
+            // આ ફંક્શનમાં કોઈ ફેરફાર નથી
+            const { tossWinner, optedTo, hostTeamName, visitorTeamName } = matchData.matchSetup;
+            const isSecondInnings = (matchData.currentInnings || 1) === 2;
+            let battingTeam = ((tossWinner === hostTeamName && optedTo === 'bat') || (tossWinner === visitorTeamName && optedTo === 'bowl')) ? (isSecondInnings ? visitorTeamName : hostTeamName) : (isSecondInnings ? hostTeamName : visitorTeamName);
+            document.getElementById('battingTeamName').innerText = battingTeam;
+
+            const { totalRuns, wickets, ballsBowled } = inningsData;
+            document.getElementById('score').innerText = `${totalRuns}/${wickets}`;
+            document.getElementById('overs').innerText = `(${Math.floor(ballsBowled / 6)}.${ballsBowled % 6} Overs)`;
+
+            const { batsmen, strikerIndex, nonStrikerIndex } = inningsData;
+            if (batsmen && batsmen.length > strikerIndex) { document.getElementById('strikerName').innerText = batsmen[strikerIndex].name; document.getElementById('strikerScore').innerText = `${batsmen[strikerIndex].runs} (${batsmen[strikerIndex].balls})`; }
+            if (batsmen && batsmen.length > nonStrikerIndex) { document.getElementById('nonStrikerName').innerText = batsmen[nonStrikerIndex].name; document.getElementById('nonStrikerScore').innerText = `${batsmen[nonStrikerIndex].runs} (${batsmen[nonStrikerIndex].balls})`; }
+
+            const { bowlingCard, currentBowlerIndex } = inningsData;
+            if (bowlingCard && bowlingCard.length > currentBowlerIndex) { document.getElementById('bowlerName').innerText = bowlingCard[currentBowlerIndex].name; }
+
+            const overContainer = document.getElementById('thisOverContainer');
+            overContainer.innerHTML = '';
+            (inningsData.thisOverEvents || []).forEach(event => {
+                const ballEl = document.createElement('div');
+                ballEl.className = 'ball-event';
+                ballEl.textContent = event.display.toUpperCase();
+                if (event.type === 'four') ballEl.classList.add('ball-four');
+                else if (event.type === 'six') ballEl.classList.add('ball-six');
+                else if (event.type === 'wicket') { ballEl.textContent = 'W'; ballEl.classList.add('ball-wicket'); }
+                else if (['wide', 'noBall', 'legBye', 'bye'].includes(event.type)) ballEl.classList.add('ball-extra');
+                overContainer.appendChild(ballEl);
+            });
+        }
+    </script>
+</body>
+</html>
