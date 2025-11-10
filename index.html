@@ -32,15 +32,10 @@
         .ball-extra { background-color: #ff9500; color: white; border: none; font-size: 12px; }
         .action-button { display: inline-block; margin-top: 20px; padding: 14px 28px; background-color: #007aff; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 18px; border: none; cursor: pointer; transition: background-color 0.2s; }
         .action-button:hover { background-color: #0056b3; }
-        #debug-info { padding: 10px; font-weight: bold; margin-bottom: 15px; border-radius: 8px; }
-        .debug-success { background-color: #d4edda; color: #155724; }
-        .debug-error { background-color: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="debug-info"></div>
-
         <h2>Live Cricket Score</h2>
         <div id="scoreboard" class="scoreboard" style="display: none;">
              <div class="team-score"> <span id="battingTeamName" class="team-name">--</span> <span id="score" class="score">0/0</span> </div>
@@ -50,7 +45,7 @@
              <div class="this-over-section"> <div class="this-over-label">This Over:</div> <div id="thisOverContainer"></div> </div>
         </div>
         
-        <div id="loading">Waiting for Match ID...</div>
+        <div id="loading">Loading live score...</div>
         <div id="error"></div>
 
         <button id="open-app-btn" class="action-button" style="display: none;">Open in App</button>
@@ -61,26 +56,11 @@
 
     <script>
         (function () {
-            const debugDiv = document.getElementById('debug-info');
-            const urlParams = new URLSearchParams(window.location.search);
-            const matchId = urlParams.get('matchId');
-            
-            if (!matchId) {
-                debugDiv.textContent = 'Debug Info: ERROR! Match ID was not found in the URL.';
-                debugDiv.className = 'debug-error';
-                showError('Error: Match ID not found in the link.');
-                return;
-            }
-
-            debugDiv.textContent = `Debug Info: Match ID found: ${matchId}`;
-            debugDiv.className = 'debug-success';
-            document.getElementById('loading').textContent = 'Loading live score...';
-
-            // --- ભૂલ અહીં સુધારી દેવામાં આવી છે ---
+            // ફાયરબેઝ કન્ફિગરેશન
             const firebaseConfig = {
                 apiKey: "AIzaSyD3SPFa6b4vg5lwHK9hm7tJuyi-9xTroGI",
                 authDomain: "cricket-scorer-app-a9d37.firebaseapp.com",
-                projectId: "cricket-scorer-app-a9d37", // વધારાની '-' કાઢી નાખવામાં આવી છે
+                projectId: "cricket-scorer-app-a9d37",
                 storageBucket: "cricket-scorer-app-a9d37.appspot.com",
                 messagingSenderId: "533428996475",
                 appId: "1:533428996475:web:58161d5066d65ad2dd15de",
@@ -89,6 +69,16 @@
             firebase.initializeApp(firebaseConfig);
             const db = firebase.firestore();
 
+            // URL માંથી મેચ ID મેળવો
+            const urlParams = new URLSearchParams(window.location.search);
+            const matchId = urlParams.get('matchId');
+            
+            if (!matchId) {
+                showError('Error: Match ID not found in the link.');
+                return;
+            }
+
+            // ડીપ-લિંકિંગ
             const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch';
             const appUri = `cricketscorer://match?id=${matchId}`;
             const openAppBtn = document.getElementById('open-app-btn');
@@ -98,6 +88,7 @@
                 setTimeout(() => { if (!document.hidden) { window.location.href = playStoreUrl; } }, 2500);
             });
 
+            // ફાયરબેઝ લિસનર
             const matchRef = db.collection('matches').doc(matchId);
             matchRef.onSnapshot((matchDoc) => {
                 if (matchDoc.exists) {
@@ -109,11 +100,11 @@
                             document.getElementById('scoreboard').style.display = 'block';
                             updateScoreboard(matchData, inningsDoc.data());
                         } else { showError(`Innings data not found.`); }
-                    }, (error) => showError('Error loading live score.'));
+                    });
                 } else { showError('Match with the given ID was not found.'); }
             }, (error) => {
-                 console.error("Firebase Error:", error); // Console માં ભૂલ બતાવવા માટે
-                 showError('Could not connect to Firebase. Check console for details.');
+                 console.error("Firebase Error:", error);
+                 showError('Could not connect to Firebase.');
             });
         })(); 
 
@@ -134,7 +125,10 @@
             document.getElementById('score').innerText = `${totalRuns}/${wickets}`;
             document.getElementById('overs').innerText = `(${Math.floor(ballsBowled / 6)}.${ballsBowled % 6} Overs)`;
 
-            const { batsmen, strikerIndex, nonStrikerIndex } = inningsData;
+            // --- ✅✅✅ મુખ્ય ફેરફાર અહીં કરવામાં આવ્યો છે ✅✅✅ ---
+            // 'battingCard' ને 'batsmen' તરીકે ઓળખાવ્યું છે
+            const { battingCard: batsmen, strikerIndex, nonStrikerIndex } = inningsData;
+            
             if (batsmen && batsmen.length > strikerIndex) { document.getElementById('strikerName').innerText = batsmen[strikerIndex].name; document.getElementById('strikerScore').innerText = `${batsmen[strikerIndex].runs} (${batsmen[strikerIndex].balls})`; }
             if (batsmen && batsmen.length > nonStrikerIndex) { document.getElementById('nonStrikerName').innerText = batsmen[nonStrikerIndex].name; document.getElementById('nonStrikerScore').innerText = `${batsmen[nonStrikerIndex].runs} (${batsmen[nonStrikerIndex].balls})`; }
 
