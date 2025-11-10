@@ -39,7 +39,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- આ નવો વિભાગ છે જે ચકાસણી માટે ઉમેર્યો છે -->
         <div id="debug-info"></div>
 
         <h2>Live Cricket Score</h2>
@@ -63,29 +62,25 @@
     <script>
         (function () {
             const debugDiv = document.getElementById('debug-info');
-            
-            // --- 1. URL માંથી મેચ ID મેળવવાનો પ્રયાસ ---
             const urlParams = new URLSearchParams(window.location.search);
             const matchId = urlParams.get('matchId');
             
             if (!matchId) {
-                // જો ID ન મળે તો સ્ક્રીન પર બતાવો
                 debugDiv.textContent = 'Debug Info: ERROR! Match ID was not found in the URL.';
                 debugDiv.className = 'debug-error';
                 showError('Error: Match ID not found in the link.');
                 return;
             }
 
-            // જો ID મળે તો સ્ક્રીન પર બતાવો
             debugDiv.textContent = `Debug Info: Match ID found: ${matchId}`;
             debugDiv.className = 'debug-success';
             document.getElementById('loading').textContent = 'Loading live score...';
 
-            // --- 2. ફાયરબેઝ અને બાકીનો કોડ શરૂ કરો ---
+            // --- ભૂલ અહીં સુધારી દેવામાં આવી છે ---
             const firebaseConfig = {
                 apiKey: "AIzaSyD3SPFa6b4vg5lwHK9hm7tJuyi-9xTroGI",
                 authDomain: "cricket-scorer-app-a9d37.firebaseapp.com",
-                projectId: "cricket-scorer-app-a-9d37",
+                projectId: "cricket-scorer-app-a9d37", // વધારાની '-' કાઢી નાખવામાં આવી છે
                 storageBucket: "cricket-scorer-app-a9d37.appspot.com",
                 messagingSenderId: "533428996475",
                 appId: "1:533428996475:web:58161d5066d65ad2dd15de",
@@ -116,7 +111,10 @@
                         } else { showError(`Innings data not found.`); }
                     }, (error) => showError('Error loading live score.'));
                 } else { showError('Match with the given ID was not found.'); }
-            }, (error) => showError('Could not connect to Firebase.'));
+            }, (error) => {
+                 console.error("Firebase Error:", error); // Console માં ભૂલ બતાવવા માટે
+                 showError('Could not connect to Firebase. Check console for details.');
+            });
         })(); 
 
         function showError(message) {
@@ -127,7 +125,6 @@
         }
 
         function updateScoreboard(matchData, inningsData) {
-            // આ ફંક્શનમાં કોઈ ફેરફાર નથી
             const { tossWinner, optedTo, hostTeamName, visitorTeamName } = matchData.matchSetup;
             const isSecondInnings = (matchData.currentInnings || 1) === 2;
             let battingTeam = ((tossWinner === hostTeamName && optedTo === 'bat') || (tossWinner === visitorTeamName && optedTo === 'bowl')) ? (isSecondInnings ? visitorTeamName : hostTeamName) : (isSecondInnings ? hostTeamName : visitorTeamName);
