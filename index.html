@@ -174,17 +174,22 @@
       errDiv.classList.remove('hidden');
     }
 
-    function updateScoreboard(matchData, inningsData) {
-        // આ ફંક્શનમાં કોઈ ફેરફાર નથી
-        const { hostTeamName, visitorTeamName, tossWinner, optedTo } = matchData.matchSetup;
+     function updateScoreboard(matchData, inningsData) {
+      const { hostTeamName, visitorTeamName, tossWinner, optedTo } = matchData.matchSetup;
       document.getElementById('match-title').innerText = `${hostTeamName} vs ${visitorTeamName}`;
 
       const statusBadge = document.getElementById('status-badge');
       const statusText = document.getElementById('status-text');
       const statusPing = document.getElementById('status-ping-animate');
       const statusDot = document.getElementById('status-ping-dot');
-
-      if (matchData.matchStatus === 'Live') {
+      
+      // ✅✅✅ મુખ્ય ફેરફાર અહીં કરવામાં આવ્યો છે ✅✅✅
+      if (matchData.matchStatus === 'Completed') {
+        statusText.innerText = 'COMPLETED';
+        statusBadge.className = 'text-white text-xs font-bold px-1.5 py-0 rounded-full flex items-center gap-0.5 bg-blue-500'; // વાદળી રંગ
+        statusPing.className = 'hidden'; // એનિમેશન બંધ
+        statusDot.className = 'hidden';   // ડોટ પણ બંધ
+      } else if (matchData.matchStatus === 'Live') {
         statusText.innerText = 'LIVE';
         statusBadge.className = 'text-white text-xs font-bold px-1.5 py-0 rounded-full flex items-center gap-0.5 bg-red-500';
         statusPing.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75';
@@ -195,7 +200,7 @@
         statusPing.className = 'hidden';
         statusDot.className = 'relative inline-flex rounded-full h-1.5 w-1.5 bg-gray-400';
       }
-
+      
       const currentInnings = matchData.currentInnings || 1;
       document.getElementById('innings-info').innerText = currentInnings === 1 ? '1st Innings' : '2nd Innings';
 
@@ -217,7 +222,14 @@
       const targetNeededInfoDiv = document.getElementById('target-needed-info');
       const targetNeededP = document.getElementById('target-needed');
 
-      if (isSecondInnings && matchData.target) {
+      // ✅✅✅ "Completed" સ્ટેટસ માટેનો ફેરફાર અહીં પણ છે ✅✅✅
+      if (matchData.matchStatus === 'Completed' && matchData.resultSummary) {
+        // જો મેચ પૂરી થઈ ગઈ હોય, તો પરિણામ બતાવો
+        targetDisplayP.innerHTML = ''; // Target વાળી લાઇન ખાલી કરો
+        targetNeededP.innerHTML = `<span class="text-green-600 font-bold">${matchData.resultSummary}</span>`;
+        targetNeededInfoDiv.classList.remove('hidden');
+      } else if (isSecondInnings && matchData.target) {
+        // જો બીજો દાવ ચાલુ હોય, તો ટાર્ગેટ બતાવો
         const target = matchData.target;
         const runsNeeded = Math.max(0, target - totalRuns);
         const totalBallsInMatch = (matchData.matchSetup.totalOvers || 0) * 6;
@@ -244,6 +256,7 @@
         }
         targetNeededInfoDiv.classList.remove('hidden');
       } else {
+        // પહેલા દાવમાં આ બન્ને વિભાગ છુપાવી દો
         targetDisplayP.innerHTML = '';
         targetNeededInfoDiv.classList.add('hidden');
       }
