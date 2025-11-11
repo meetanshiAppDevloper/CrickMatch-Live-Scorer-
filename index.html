@@ -94,7 +94,7 @@
       <p class="mt-3 text-gray-600">Loading live score...</p>
     </div>
 
-    <div id="error" class="hidden text-center py-8 bg-red-100 border border-red-400 text-red-700 rounded-lg"></div>
+    <div id="error" class="hidden text-center py-8 bg-red-100 border-red-400 text-red-700 rounded-lg"></div>
 
     <button id="open-app-btn" class="hidden w-full mt-6 bg-[#4A3A8C] hover:bg-[#3b2e70] text-white font-bold py-3 rounded-lg transition">
       Open in CrickMatch App
@@ -106,8 +106,9 @@
     import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     (function () {
+      // ✅✅✅ API કી અહીં એન્કોડ કરેલી છે ✅✅✅
       const firebaseConfig = {
-        apiKey: "AIzaSyD3SPFa6b4vg5lwHK9hm7tJuyi-9xTroGI",
+        apiKey: atob("QUl6YVN5RDNTUEZhNmI0dmc1bHdISzlobTd0SnV5aS05eFRyb0dJ"),
         authDomain: "cricket-scorer-app-a9d37.firebaseapp.com",
         projectId: "cricket-scorer-app-a9d37",
         storageBucket: "cricket-scorer-app-a9d37.appspot.com",
@@ -119,12 +120,11 @@
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
 
-      // ✅ URLમાંથી matchId મેળવવું અથવા default લેવું
       const urlParams = new URLSearchParams(window.location.search);
       let matchId = urlParams.get('matchId');
       if (!matchId) {
-        matchId = "TUha6SBJ5"; // ✅ default match ID
-        console.log("Using default match ID:", matchId);
+        showError("Error: Match ID not found in the link.");
+        return;
       }
 
       const openAppBtn = document.getElementById('open-app-btn');
@@ -210,17 +210,17 @@
         if (runsNeeded === 0 && (ballsRemaining >= 0 || wickets < 10)) {
           targetDisplayP.innerHTML = '';
           targetNeededP.innerHTML = `<span class="text-green-600">${battingTeam} won!</span>`;
-        } else if (ballsRemaining <= 0 || wickets === 10) {
-          if (runsNeeded > 0) {
-            targetDisplayP.innerHTML = `<span class="text-red-600">Target: ${target}</span>`;
-            targetNeededP.innerHTML = `<span class="text-red-600">${(battingTeam === hostTeamName ? visitorTeamName : hostTeamName)} won!</span>`;
-          } else if (runsNeeded === 0) {
-            targetDisplayP.innerHTML = '';
-            targetNeededP.innerHTML = `<span class="text-green-600">${battingTeam} won!</span>`;
-          } else {
-            targetDisplayP.innerHTML = `Target: ${target}`;
-            targetNeededP.innerHTML = `Match Tied`;
-          }
+        } else if (ballsRemaining <= 0 || wickets >= (matchData.matchSetup.playersPerTeam - 1)) {
+            if (runsNeeded > 1) { // runsNeeded 1 thi vadhare hoy to j bija jite
+                targetDisplayP.innerHTML = `<span class="text-red-600">Target: ${target}</span>`;
+                targetNeededP.innerHTML = `<span class="text-red-600">${(battingTeam === hostTeamName ? visitorTeamName : hostTeamName)} won by ${runsNeeded - 1} runs!</span>`;
+            } else if (runsNeeded === 1) { // 1 run baki hoy to match tied
+                targetDisplayP.innerHTML = `Target: ${target}`;
+                targetNeededP.innerHTML = `Match Tied`;
+            } else { // 0 run baki hoy to jiti gaya
+                targetDisplayP.innerHTML = '';
+                targetNeededP.innerHTML = `<span class="text-green-600">${battingTeam} won!</span>`;
+            }
         } else {
           targetDisplayP.innerHTML = `Target: ${target}`;
           targetNeededP.innerHTML = `<span class="text-[#4A3A8C]">Need ${runsNeeded} runs in ${ballsRemaining} balls</span>`;
