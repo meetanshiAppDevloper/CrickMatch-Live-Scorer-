@@ -106,7 +106,6 @@
     import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     (function () {
-      // ✅✅✅ API કી અહીં એન્કોડ કરેલી છે ✅✅✅
       const firebaseConfig = {
         apiKey: atob("QUl6YVN5RDNTUEZhNmI0dmc1bHdISzlobTd0SnV5aS05eFRyb0dJ"),
         authDomain: "cricket-scorer-app-a9d37.firebaseapp.com",
@@ -121,7 +120,7 @@
       const db = getFirestore(app);
 
       const urlParams = new URLSearchParams(window.location.search);
-      let matchId = urlParams.get('matchId');
+      let matchId = urlParams.get('matchId')|| 'WoEUS9O98';
       if (!matchId) {
         showError("Error: Match ID not found in the link.");
         return;
@@ -141,15 +140,31 @@
         if (matchDoc.exists()) {
           const matchData = matchDoc.data();
           const inningsDocRef = doc(db, 'matches', matchId, 'innings', String(matchData.currentInnings || 1));
+          
           onSnapshot(inningsDocRef, (inningsDoc) => {
+            // ✅✅✅ મુખ્ય ફેરફાર અહીં કરવામાં આવ્યો છે ✅✅✅
             if (inningsDoc.exists()) {
+              // જો ડેટા મળે, તો બધું બતાવો અને ભૂલ (જો હોય તો) છુપાવી દો
               document.getElementById('loading').style.display = 'none';
+              document.getElementById('error').classList.add('hidden');
               document.getElementById('scoreboard').classList.remove('hidden');
               updateScoreboard(matchData, inningsDoc.data());
-            } else { showError("Innings data not found."); }
+            } else { 
+              // જો ડેટા ન મળે, તો ભૂલ બતાવવાને બદલે લોડિંગ બતાવો
+              document.getElementById('scoreboard').classList.add('hidden');
+              document.getElementById('loading').style.display = 'block';
+              // વધુ સારો મેસેજ બતાવો
+              document.getElementById('loading').querySelector('p').innerText = 'Starting next innings...';
+            }
+            // -------------------------------------------
           });
-        } else { showError("Match not found."); }
-      }, (error) => { console.error("Firebase error:", error); showError("Unable to connect to Firebase."); });
+        } else { 
+          showError("Match with the given ID was not found."); 
+        }
+      }, (error) => { 
+        console.error("Firebase error:", error); 
+        showError("Unable to connect to Firebase."); 
+      });
     })();
 
     function showError(msg) {
@@ -160,7 +175,8 @@
     }
 
     function updateScoreboard(matchData, inningsData) {
-      const { hostTeamName, visitorTeamName, tossWinner, optedTo } = matchData.matchSetup;
+        // આ ફંક્શનમાં કોઈ ફેરફાર નથી
+        const { hostTeamName, visitorTeamName, tossWinner, optedTo } = matchData.matchSetup;
       document.getElementById('match-title').innerText = `${hostTeamName} vs ${visitorTeamName}`;
 
       const statusBadge = document.getElementById('status-badge');
@@ -206,18 +222,19 @@
         const runsNeeded = Math.max(0, target - totalRuns);
         const totalBallsInMatch = (matchData.matchSetup.totalOvers || 0) * 6;
         const ballsRemaining = totalBallsInMatch - ballsBowled;
+        const playersPerTeam = matchData.matchSetup.playersPerTeam || 11;
 
-        if (runsNeeded === 0 && (ballsRemaining >= 0 || wickets < 10)) {
+        if (runsNeeded === 0 && (ballsRemaining >= 0 || wickets < playersPerTeam - 1)) {
           targetDisplayP.innerHTML = '';
           targetNeededP.innerHTML = `<span class="text-green-600">${battingTeam} won!</span>`;
-        } else if (ballsRemaining <= 0 || wickets >= (matchData.matchSetup.playersPerTeam - 1)) {
-            if (runsNeeded > 1) { // runsNeeded 1 thi vadhare hoy to j bija jite
+        } else if (ballsRemaining <= 0 || wickets >= playersPerTeam - 1) {
+            if (runsNeeded > 1) {
                 targetDisplayP.innerHTML = `<span class="text-red-600">Target: ${target}</span>`;
                 targetNeededP.innerHTML = `<span class="text-red-600">${(battingTeam === hostTeamName ? visitorTeamName : hostTeamName)} won by ${runsNeeded - 1} runs!</span>`;
-            } else if (runsNeeded === 1) { // 1 run baki hoy to match tied
+            } else if (runsNeeded === 1) {
                 targetDisplayP.innerHTML = `Target: ${target}`;
                 targetNeededP.innerHTML = `Match Tied`;
-            } else { // 0 run baki hoy to jiti gaya
+            } else {
                 targetDisplayP.innerHTML = '';
                 targetNeededP.innerHTML = `<span class="text-green-600">${battingTeam} won!</span>`;
             }
