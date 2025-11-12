@@ -122,7 +122,7 @@
       const db = getFirestore(app);
 
       const urlParams = new URLSearchParams(window.location.search);
-      let matchId = urlParams.get('matchId')|| 'WoEUS9O98';
+      let matchId = urlParams.get('matchId');
       if (!matchId) {
         showError("Error: Match ID not found in the link.");
         return;
