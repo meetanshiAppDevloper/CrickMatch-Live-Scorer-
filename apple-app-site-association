@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "2VF4AF9F93.com.meetanshi.crickmatch",
+        "paths": [ "/CrickMatch-Live-Scorer-/*" ]
+      }
+    ]
+  }
+}
