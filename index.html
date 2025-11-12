@@ -107,54 +107,7 @@
 
     (function () {
 
-   const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-      const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
-      const isAndroid = /android/i.test(userAgent);
 
-      const appleAppId = '6755029198';
-      const androidPackageName = 'com.meetanshi.crickmatch';
-      
-      const appStoreUrl = `https://apps.apple.com/app/id${appleAppId}`;
-      const playStoreUrl = `https://play.google.com/store/apps/details?id=${androidPackageName}`;
-
-      const storeUrl = isIOS ? appStoreUrl : playStoreUrl;
-      
-      const urlParams = new URLSearchParams(window.location.search);
-      const matchId = urlParams.get('matchId');
-      const mode = urlParams.get('mode');
-
-      if (!matchId) {
-        showError("Error: Match ID not found in the link.");
-        return;
-      }
-      
-      const openAppBtn = document.getElementById('open-app-btn');
-      openAppBtn.style.display = 'block';
-
-      function redirectToApp() {
-        let appUri;
-        if (isIOS) {
-          // iOS માટે Universal Link
-          appUri = `https://meetanshiappdevloper.github.io/CrickMatch-Live-Scorer-/?matchId=${matchId}`;
-        } else {
-          // Android માટે Custom Scheme
-          appUri = `cricketscorer://match?id=${matchId}`;
-        }
-        
-        window.location.href = appUri;
-
-        if (mode !== 'debug') {
-          setTimeout(() => {
-            if (!document.hidden) {
-              window.location.href = storeUrl;
-            }
-          }, 2500);
-        }
-      }
-
-      // ફક્ત બટન પર ક્લિક થાય ત્યારે જ એપ ખોલો
-      openAppBtn.addEventListener('click', redirectToApp);
-      
       const firebaseConfig = {
         apiKey: atob("QUl6YVN5RDNTUEZhNmI0dmc1bHdISzlobTd0SnV5aS05eFRyb0dJ"),
         authDomain: "cricket-scorer-app-a9d37.firebaseapp.com",
