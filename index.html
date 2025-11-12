@@ -128,13 +128,34 @@
         return;
       }
 
-      const openAppBtn = document.getElementById('open-app-btn');
+        const openAppBtn = document.getElementById('open-app-btn');
       openAppBtn.style.display = 'block';
+      
       openAppBtn.addEventListener('click', () => {
+        // --- iOS અને Android માટે લોજિક અહીં બદલ્યો છે ---
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
         const appUri = `cricketscorer://match?id=${matchId}`;
-        const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch';
-        window.location.href = appUri;
-        setTimeout(() => { if (!document.hidden) window.location.href = playStoreUrl; }, 2000);
+
+        // iOS માટે
+        if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+          const appStoreUrl = 'https://apps.apple.com/us/app/your-app-name/id<YOUR_APP_ID>'; // <--તમારો Apple App ID અહીં નાખો
+          window.location.href = appUri;
+          // જો એપ ન ખુલે તો 2.5 સેકન્ડ પછી App Store પર મોકલો
+          setTimeout(() => {
+            window.location.href = appStoreUrl;
+          }, 2500);
+        } 
+        // Android માટે
+        else {
+          const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch';
+          window.location.href = appUri;
+          // જો એપ ન ખુલે તો 2 સેકન્ડ પછી Play Store પર મોકલો
+          setTimeout(() => {
+             if (!document.hidden) {
+                window.location.href = playStoreUrl;
+             }
+          }, 2000);
+        }
       });
 
       const matchRef = doc(db, 'matches', matchId);
