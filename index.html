@@ -107,8 +107,7 @@
 
     (function () {
 
-
-      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+   const userAgent = navigator.userAgent || navigator.vendor || window.opera;
       const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
       const isAndroid = /android/i.test(userAgent);
 
@@ -119,8 +118,7 @@
       const playStoreUrl = `https://play.google.com/store/apps/details?id=${androidPackageName}`;
 
       const storeUrl = isIOS ? appStoreUrl : playStoreUrl;
-      document.getElementById('download-link').href = storeUrl;
-
+      
       const urlParams = new URLSearchParams(window.location.search);
       const matchId = urlParams.get('matchId');
       const mode = urlParams.get('mode');
@@ -135,17 +133,12 @@
 
       function redirectToApp() {
         let appUri;
-        // શરત: જો iOS હોય, તો Universal Link નો ઉપયોગ કરો
         if (isIOS) {
+          // iOS માટે Universal Link
           appUri = `https://meetanshiappdevloper.github.io/CrickMatch-Live-Scorer-/?matchId=${matchId}`;
-        } 
-        // શરત: જો Android હોય, તો Custom Scheme નો ઉપયોગ કરો
-        else if (isAndroid) {
+        } else {
+          // Android માટે Custom Scheme
           appUri = `cricketscorer://match?id=${matchId}`;
-        }
-        // જો બીજું કોઈ પ્લેટફોર્મ હોય, તો Universal Link નો પ્રયાસ કરો
-        else {
-            appUri = `https://meetanshiappdevloper.github.io/CrickMatch-Live-Scorer-/?matchId=${matchId}`;
         }
         
         window.location.href = appUri;
@@ -159,10 +152,8 @@
         }
       }
 
+      // ફક્ત બટન પર ક્લિક થાય ત્યારે જ એપ ખોલો
       openAppBtn.addEventListener('click', redirectToApp);
-      
-      // પેજ લોડ થતાં જ આપમેળે રીડાયરેક્ટ કરો
-      redirectToApp();
       
       const firebaseConfig = {
         apiKey: atob("QUl6YVN5RDNTUEZhNmI0dmc1bHdISzlobTd0SnV5aS05eFRyb0dJ"),
