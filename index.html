@@ -106,6 +106,63 @@
     import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     (function () {
+
+
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const isIOS = /iPad|iPhone|iPod/.test(userAgent) && !window.MSStream;
+      const isAndroid = /android/i.test(userAgent);
+
+      const appleAppId = '6755029198';
+      const androidPackageName = 'com.meetanshi.crickmatch';
+      
+      const appStoreUrl = `https://apps.apple.com/app/id${appleAppId}`;
+      const playStoreUrl = `https://play.google.com/store/apps/details?id=${androidPackageName}`;
+
+      const storeUrl = isIOS ? appStoreUrl : playStoreUrl;
+      document.getElementById('download-link').href = storeUrl;
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const matchId = urlParams.get('matchId');
+      const mode = urlParams.get('mode');
+
+      if (!matchId) {
+        showError("Error: Match ID not found in the link.");
+        return;
+      }
+      
+      const openAppBtn = document.getElementById('open-app-btn');
+      openAppBtn.style.display = 'block';
+
+      function redirectToApp() {
+        let appUri;
+        // શરત: જો iOS હોય, તો Universal Link નો ઉપયોગ કરો
+        if (isIOS) {
+          appUri = `https://meetanshiappdevloper.github.io/CrickMatch-Live-Scorer-/?matchId=${matchId}`;
+        } 
+        // શરત: જો Android હોય, તો Custom Scheme નો ઉપયોગ કરો
+        else if (isAndroid) {
+          appUri = `cricketscorer://match?id=${matchId}`;
+        }
+        // જો બીજું કોઈ પ્લેટફોર્મ હોય, તો Universal Link નો પ્રયાસ કરો
+        else {
+            appUri = `https://meetanshiappdevloper.github.io/CrickMatch-Live-Scorer-/?matchId=${matchId}`;
+        }
+        
+        window.location.href = appUri;
+
+        if (mode !== 'debug') {
+          setTimeout(() => {
+            if (!document.hidden) {
+              window.location.href = storeUrl;
+            }
+          }, 2500);
+        }
+      }
+
+      openAppBtn.addEventListener('click', redirectToApp);
+      
+      // પેજ લોડ થતાં જ આપમેળે રીડાયરેક્ટ કરો
+      redirectToApp();
       
       const firebaseConfig = {
         apiKey: atob("QUl6YVN5RDNTUEZhNmI0dmc1bHdISzlobTd0SnV5aS05eFRyb0dJ"),
