@@ -39,11 +39,12 @@
           <div class="flex items-center gap-3 mt-1">
             <div id="innings-info" class="text-sm text-gray-500 font-medium">-- Innings</div>
           </div>
-         <div class="mt-2 flex gap-4">
-  <span class="text-sm text-[#4A3A8C] font-medium">CRR : <span id="crr" class="font-bold">0.00</span></span>
-  <!-- RRR માટે નવું એલિમેન્ટ (શરૂઆતમાં hidden રહેશે) -->
-  <span id="rrr-container" class="hidden text-sm text-red-600 font-medium">RRR : <span id="rrr" class="font-bold">0.00</span></span>
-</div>
+     <div class="mt-2 flex flex-col gap-1">
+            <span class="text-sm text-[#4A3A8C] font-medium">CRR : <span id="crr" class="font-bold">0.00</span></span>
+            
+            <!-- કલર text-red-600 કાઢીને text-[#4A3A8C] કર્યો છે -->
+            <span id="rrr-container" class="hidden text-sm text-[#4A3A8C] font-medium">RRR : <span id="rrr" class="font-bold">0.00</span></span>
+          </div>
         </div>
 
         <div class="flex justify-center items-start pt-1">
