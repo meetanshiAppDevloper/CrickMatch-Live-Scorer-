@@ -39,9 +39,11 @@
           <div class="flex items-center gap-3 mt-1">
             <div id="innings-info" class="text-sm text-gray-500 font-medium">-- Innings</div>
           </div>
-          <div class="mt-2">
-            <span class="text-sm text-[#4A3A8C] font-medium">CRR : <span id="crr" class="font-bold">0.00</span></span>
-          </div>
+         <div class="mt-2 flex gap-4">
+  <span class="text-sm text-[#4A3A8C] font-medium">CRR : <span id="crr" class="font-bold">0.00</span></span>
+  <!-- RRR માટે નવું એલિમેન્ટ (શરૂઆતમાં hidden રહેશે) -->
+  <span id="rrr-container" class="hidden text-sm text-red-600 font-medium">RRR : <span id="rrr" class="font-bold">0.00</span></span>
+</div>
         </div>
 
         <div class="flex justify-center items-start pt-1">
@@ -267,6 +269,28 @@
 
       const crr = (ballsBowled > 0) ? (totalRuns / (ballsBowled / 6)).toFixed(2) : '0.00';
       document.getElementById('crr').innerText = crr;
+
+       const rrrContainer = document.getElementById('rrr-container');
+      const rrrText = document.getElementById('rrr');
+
+      if (isSecondInnings && matchData.target && matchData.matchStatus === 'Live') {
+        const target = matchData.target;
+        const runsNeeded = target - totalRuns;
+        const totalOvers = matchData.matchSetup.totalOvers || 0;
+        const totalBalls = totalOvers * 6;
+        const ballsRemaining = totalBalls - ballsBowled;
+
+        if (ballsRemaining > 0 && runsNeeded > 0) {
+          // RRR ફોર્મ્યુલા: (જરૂરી રન * 6) / બાકી બોલ
+          const rrr = (runsNeeded * 6) / ballsRemaining;
+          rrrText.innerText = rrr.toFixed(2);
+          rrrContainer.classList.remove('hidden'); // RRR બતાવો
+        } else {
+          rrrContainer.classList.add('hidden'); // મેચ પતી ગઈ હોય તો છુપાવો
+        }
+      } else {
+        rrrContainer.classList.add('hidden'); // પહેલી ઇનિંગમાં છુપાવો
+      }
 
       const targetDisplayP = document.getElementById('target-display');
       const targetNeededInfoDiv = document.getElementById('target-needed-info');
