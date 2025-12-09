@@ -162,29 +162,50 @@
               Opening app...
             </div>
         `;
-        // --- iOS અને Android માટે લોજિક અહીં બદલ્યો છે ---
-        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-        const appUri = `cricketscorer://match?id=${matchId}`;
 
-        // iOS માટે
-        if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-          const appStoreUrl = 'https://apps.apple.com/us/app/crickmatch-live-scorer/id6755029198';// <--તમારો Apple App ID અહીં નાખો
-          window.location.href = appUri;
-          // જો એપ ન ખુલે તો 2.5 સેકન્ડ પછી App Store પર મોકલો
-          setTimeout(() => {
-            window.location.href = appStoreUrl;
-          }, 2500);
+        const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+        
+        // Android માટે: Intent URL વાપરો (આ સૌથી મહત્વનું છે)
+        if (/android/i.test(userAgent)) {
+            const packageName = 'com.meetanshi.crickmatch'; // તમારું પેકેજ નેમ
+            const scheme = 'cricketscorer';
+            const path = `match?id=${matchId}`;
+            const fallbackUrl = 'https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch';
+
+            // Android Intent URL બતાવો
+            // આ URL નો અર્થ: "આ એપ ખોલો, જો ન હોય તો browser_fallback_url પર જાઓ"
+            const intentUrl = `intent://${path}#Intent;scheme=${scheme};package=${packageName};S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
+
+            window.location.href = intentUrl;
+
+            // બટન રીસેટ કરવા માટે થોડો સમય આપો
+            setTimeout(() => {
+                 resetButtonState();
+            }, 2000);
         } 
-        // Android માટે
+        
+        // iOS માટે (જૂનું લોજિક બરાબર છે, પણ window replace ન થાય તેનું ધ્યાન રાખવું)
+        else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+            const appStoreUrl = 'https://apps.apple.com/us/app/crickmatch-live-scorer/id6755029198';
+            const appUri = `cricketscorer://match?id=${matchId}`;
+
+            window.location.href = appUri;
+
+            // 2.5 સેકન્ડ પછી ચેક કરો
+            setTimeout(() => {
+                // જો પેજ હજુ દેખાય છે (એટલે કે એપ નથી ખૂલી)
+                if (!document.hidden) {
+                    // window.location ને બદલે window.open વાપરો અથવા user ને કહો
+                    window.location.href = appStoreUrl; 
+                }
+                resetButtonState();
+            }, 2500);
+        } 
+        
+        // PC અથવા અન્ય માટે
         else {
-          const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch';
-          window.location.href = appUri;
-          // જો એપ ન ખુલે તો 2 સેકન્ડ પછી Play Store પર મોકલો
-          setTimeout(() => {
-             if (!document.hidden) {
-                window.location.href = playStoreUrl;
-             }
-          }, 2000);
+            alert("Please open this link on a mobile device.");
+            resetButtonState();
         }
       });
 
