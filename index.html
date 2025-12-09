@@ -16,7 +16,19 @@
     }
   </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen flex flex-col"> 
+
+  <!-- 👇 આ નવો કોડ ઉમેરો 👇 -->
+  <div id="no-match-id-screen" class="hidden flex-grow flex flex-col items-center justify-center p-6 text-center h-screen">
+    <div class="bg-red-100 p-5 rounded-full mb-6">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">Match ID Not Found</h1>
+    <p class="text-gray-600 max-w-xs mx-auto">It seems the link is broken or the Match ID is missing. Please check the URL and try again.</p>
+  </div>
+    <div id="main-content" class="w-full">
   <div class="w-full bg-[#4A3A8C] text-white text-center p-3 text-xl font-bold shadow-lg">
     CrickMatch Live Scorer App
   </div>
@@ -121,9 +133,10 @@
 
       const urlParams = new URLSearchParams(window.location.search);
       let matchId = urlParams.get('matchId');
-      if (!matchId) {
-        showError("Error: Match ID not found in the link.");
-        return;
+     if (!matchId) {
+        document.getElementById('main-content').classList.add('hidden'); // મેઈન સ્ક્રીન છુપાવો
+        document.getElementById('no-match-id-screen').classList.remove('hidden'); // એરર સ્ક્રીન બતાવો
+        return; 
       }
 
         const openAppBtn = document.getElementById('open-app-btn');
