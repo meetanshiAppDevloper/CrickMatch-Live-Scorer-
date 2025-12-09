@@ -77,6 +77,8 @@
 
         <div id="target-needed-info" class="hidden text-center border-t border-gray-200 pt-3">
           <p id="target-needed" class="text-sm font-semibold text-gray-800"></p>
+          <!-- ✅✅✅ ફેરફાર: Man of the Match માટે અહીં લાઇન ઉમેરી છે ✅✅✅ -->
+          <p id="mom-display" class="text-sm font-bold text-[#4A3A8C] mt-2 hidden"></p>
         </div>
 
         <div class="border-t border-gray-200 pt-3 space-y-2">
@@ -134,17 +136,15 @@
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
 
-      // Helper function to show full screen Error
       function showMatchNotFoundScreen() {
-        document.getElementById('main-content').classList.add('hidden'); // મેઈન સ્ક્રીન છુપાવો
-        document.getElementById('no-match-id-screen').classList.remove('hidden'); // નવી એરર સ્ક્રીન બતાવો
-        document.getElementById('loading').style.display = 'none'; // લોડિંગ બંધ કરો
+        document.getElementById('main-content').classList.add('hidden');
+        document.getElementById('no-match-id-screen').classList.remove('hidden');
+        document.getElementById('loading').style.display = 'none';
       }
 
       const urlParams = new URLSearchParams(window.location.search);
       let matchId = urlParams.get('matchId');
 
-      // 1. જો URL માં ID ન હોય
       if (!matchId) {
         showMatchNotFoundScreen();
         return;
@@ -221,12 +221,10 @@
             }
           });
         } else { 
-          // ✅✅✅ ફેરફાર અહીં છે: જો ID હોય પણ મેચ ન મળે તો આ ફંક્શન કોલ થશે ✅✅✅
           showMatchNotFoundScreen();
         }
       }, (error) => { 
         console.error("Firebase error:", error); 
-        // કનેક્શન એરર માટે આ અલગ જ રાખો, અથવા અહીં પણ showMatchNotFoundScreen() વાપરી શકો
         showError("Unable to connect to Firebase."); 
       });
     })();
@@ -305,12 +303,24 @@
       const targetDisplayP = document.getElementById('target-display');
       const targetNeededInfoDiv = document.getElementById('target-needed-info');
       const targetNeededP = document.getElementById('target-needed');
+      const momDisplayP = document.getElementById('mom-display'); // MoM Reference
 
       if (matchData.matchStatus === 'Completed' && matchData.resultSummary) {
         targetDisplayP.innerHTML = ''; 
         targetNeededP.innerHTML = `<span class="text-green-600 font-bold">${matchData.resultSummary}</span>`;
         targetNeededInfoDiv.classList.remove('hidden');
+
+        // ✅✅✅ Man of the Match બતાવવા માટેનું Logic ✅✅✅
+        if (matchData.manOfTheMatch) {
+            momDisplayP.innerHTML = `🏆 Player of the Match: ${matchData.manOfTheMatch}`;
+            momDisplayP.classList.remove('hidden');
+        } else {
+            momDisplayP.classList.add('hidden');
+        }
       } else if (isSecondInnings && matchData.target) {
+        // મેચ ચાલુ હોય તો MoM છુપાવો
+        momDisplayP.classList.add('hidden');
+
         const target = matchData.target;
         const runsNeeded = Math.max(0, target - totalRuns);
         const totalBallsInMatch = (matchData.matchSetup.totalOvers || 0) * 6;
@@ -339,6 +349,7 @@
       } else {
         targetDisplayP.innerHTML = '';
         targetNeededInfoDiv.classList.add('hidden');
+        momDisplayP.classList.add('hidden');
       }
 
       const striker = battingCard?.[strikerIndex] || { name: "Batsman", runs: 0, balls: 0 };
