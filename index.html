@@ -598,21 +598,43 @@ function renderBattingTable(card, elementId) {
         });
     }
 
-    function renderBowlingTable(card, elementId) {
+  function renderBowlingTable(card, elementId) {
         const tbody = document.getElementById(elementId);
         tbody.innerHTML = '';
         if (!card) return;
 
-        card.forEach(b => {
-            if(b.ballsBowled > 0 || b.overs > 0) {
+        // ✅ Step 1: જે-તે ઇનિંગ્સનો ડેટા મેળવો (જેથી currentBowlerIndex મળે)
+        let specificInningsData = null;
+        if (elementId.includes('1')) {
+            specificInningsData = globalInnings1Data;
+        } else {
+            specificInningsData = globalInnings2Data;
+        }
+
+        // હાલનો બોલર કોણ છે તે શોધો
+        const currentBowlerIdx = specificInningsData?.currentBowlerIndex;
+
+        card.forEach((b, idx) => {
+            
+            // ✅ Step 2: ચેક કરો કે આ બોલર Current Bowler છે કે નહીં
+            const isCurrentBowler = (idx === currentBowlerIdx);
+
+            // શરત: જો બોલરે બોલ નાખ્યા હોય OR રન આપ્યા હોય OR તે કરંટ બોલર હોય
+            if (b.ballsBowled > 0 || b.runsConceded > 0 || isCurrentBowler) {
+
                 const overs = Math.floor(b.ballsBowled / 6);
                 const balls = b.ballsBowled % 6;
                 const totalOversDec = b.ballsBowled / 6;
                 const er = totalOversDec > 0 ? (b.runsConceded / totalOversDec).toFixed(1) : '0.0';
 
+                // ઓપ્શનલ: કરંટ બોલરના નામ પાછળ સ્ટાર (*) લગાવો જેથી ખબર પડે
+                const displayName = isCurrentBowler ? `${b.name} *` : b.name;
+                const nameStyle = isCurrentBowler ? "font-bold text-[#4A3A8C]" : "font-medium text-gray-800";
+
                 const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-100 hover:bg-gray-50 transition";
                 tr.innerHTML = `
-                    <td class="py-2 px-3 font-medium text-gray-800">${b.name}</td>
+                    <td class="py-2 px-3 ${nameStyle}">${displayName}</td>
                     <td class="py-2 px-1 text-right text-gray-600">${overs}.${balls}</td>
                     <td class="py-2 px-1 text-right text-gray-500">${b.maidens || 0}</td>
                     <td class="py-2 px-1 text-right text-gray-500">${b.runsConceded}</td>
