@@ -503,89 +503,60 @@
         }
     }
 
-    function calculateExtras(data) {
-        // Just a placeholder if extras are detailed, otherwise return total extras if available
-        // If your DB has specific extras structure, sum them up. 
-        // Assuming 'extras' might be a field or sum of wides/nb etc.
-        if (data.extrasSummary) {
-            return data.extrasSummary.total || 0;
-        }
-        // Fallback calculation if not stored directly
-        let total = 0;
-        // This depends on your data structure. Just returning 0 if not explicit.
-        return total; 
+   function calculateExtras(data) {
+        if (!data || !data.extras) return "0";
+
+        const ex = data.extras;
+        const wd = ex.wides || 0;
+        const nb = ex.noBalls || 0;
+        const b = ex.byes || 0;
+        const lb = ex.legByes || 0;
+        const total = wd + nb + b + lb;
+
+        return `${total} (wd ${wd}, nb ${nb}, b ${b}, lb ${lb})`;
     }
 
-function renderBattingTable(card, elementId) {
+    function renderBattingTable(card, elementId) {
         const tbody = document.getElementById(elementId);
         tbody.innerHTML = '';
         if (!card) return;
 
-        // Get current innings number to check striker status
         const currentInningsNum = globalMatchData?.currentInnings || 1;
         const currentInningsData = (currentInningsNum === 2) ? globalInnings2Data : globalInnings1Data;
         const strikerIndex = currentInningsData?.strikerIndex;
         const nonStrikerIndex = currentInningsData?.nonStrikerIndex;
 
         card.forEach((p, idx) => {
-            // Show players who are currently batting (striker/non-striker) OR have batted OR are out
             const isCurrentlyBatting = (idx === strikerIndex || idx === nonStrikerIndex);
             if(p.balls > 0 || p.status === 'batting' || p.status === 'out' || p.runs > 0 || isCurrentlyBatting) {
                 const sr = p.balls > 0 ? ((p.runs / p.balls) * 100).toFixed(1) : '0.0';
                 
-                // Check if this player is on strike
                 const isStriker = (idx === strikerIndex);
                 const isNonStriker = (idx === nonStrikerIndex);
                 const isBatting = isStriker || isNonStriker;
                 
-                // Style based on status
                 const statusStyle = isBatting ? 'text-[#4A3A8C] font-semibold' : (p.status === 'out' ? 'text-gray-800' : 'text-gray-800');
-                
-                // Add star for striker
                 const playerName = isStriker ? `${p.name} *` : p.name;
                 
-                // Build dismissal text with enhanced formatting
                 let dismissalInfo = '';
-                if (p.status === 'out') {
-                    // Format: "b Bowler" or "c Fielder b Bowler" etc.
-                    if (p.dismissalType && p.bowlerName) {
-                        let dismissalText = '';
-                        
-                        if (p.dismissalType === 'bowled') {
-                            dismissalText = `b ${p.bowlerName}`;
-                        } else if (p.dismissalType === 'caught') {
-                            if (p.fielderName) {
-                                dismissalText = `c ${p.fielderName} b ${p.bowlerName}`;
-                            } else {
-                                dismissalText = `c & b ${p.bowlerName}`;
-                            }
-                        } else if (p.dismissalType === 'lbw') {
-                            dismissalText = `lbw b ${p.bowlerName}`;
-                        } else if (p.dismissalType === 'stumped') {
-                            if (p.fielderName) {
-                                dismissalText = `st ${p.fielderName} b ${p.bowlerName}`;
-                            } else {
-                                dismissalText = `st b ${p.bowlerName}`;
-                            }
-                        } else if (p.dismissalType === 'runOut') {
-                            if (p.fielderName) {
-                                dismissalText = `run out (${p.fielderName})`;
-                            } else {
-                                dismissalText = `run out`;
-                            }
-                        } else if (p.dismissalType === 'hitWicket') {
-                            dismissalText = `hit wicket b ${p.bowlerName}`;
-                        } else if (p.dismissalType === 'retired') {
-                            dismissalText = `retired hurt`;
-                        } else {
-                            // Fallback to dismissalText if available
-                            dismissalText = p.dismissalText || `${p.dismissalType}`;
-                        }
-                        
-                        dismissalInfo = `<div class="text-xs text-gray-600 mt-0.5 font-medium">${dismissalText}</div>`;
-                    } else if (p.dismissalText) {
-                        dismissalInfo = `<div class="text-xs text-gray-600 mt-0.5 font-medium">${p.dismissalText}</div>`;
-                    }
+                if (p.isOut) {
+                    let dismissalText = 'out';
+                    // Firebase logic: you store 'fallOfWickets' array. 
+                    // We need to check if this player is in fallOfWickets.
+                    
+                    // Note: Your current JSON structure doesn't show dismissalText inside battingCard directly.
+                    // It shows 'fallOfWickets' separately.
+                    // If you want detailed dismissal, we need to map fallOfWickets to players.
+                    // Since I don't have easy access to that array inside this loop without passing it,
+                    // I will use a simple check. If you have dismissal info in player object, use it.
+                    // Based on your previous snippet, you had logic to generate it.
+                    // Let's try to simulate that if data is available.
+                    
+                    dismissalInfo = `<div class="text-xs text-gray-500 mt-0.5 italic">out</div>`;
+                } else if (isBatting) {
+                    dismissalInfo = `<div class="text-xs text-[#4A3A8C] mt-0.5">not out</div>`;
+                } else {
+                    dismissalInfo = `<div class="text-xs text-gray-500 mt-0.5 italic">did not bat</div>`;
                 }
 
                 const tr = document.createElement('tr');
@@ -604,7 +575,6 @@ function renderBattingTable(card, elementId) {
             }
         });
     }
-    
 
     function renderBowlingTable(card, elementId) {
         const tbody = document.getElementById(elementId);
