@@ -516,23 +516,26 @@
         return total; 
     }
 
-    function renderBattingTable(card, elementId) {
+    function renderBattingTable(card, elementId, inningsNumber) {
         const tbody = document.getElementById(elementId);
         tbody.innerHTML = '';
         if (!card) return;
 
-        // Get current innings number to check striker status
+        // Get the correct innings data based on which innings we're rendering
+        const inningsData = (inningsNumber === 1) ? globalInnings1Data : globalInnings2Data;
         const currentInningsNum = globalMatchData?.currentInnings || 1;
-        const currentInningsData = (currentInningsNum === 2) ? globalInnings2Data : globalInnings1Data;
-        const strikerIndex = currentInningsData?.strikerIndex;
-        const nonStrikerIndex = currentInningsData?.nonStrikerIndex;
+        
+        // Only show striker/non-striker indicators if this is the current innings
+        const isCurrentInnings = (currentInningsNum === inningsNumber);
+        const strikerIndex = isCurrentInnings ? inningsData?.strikerIndex : -1;
+        const nonStrikerIndex = isCurrentInnings ? inningsData?.nonStrikerIndex : -1;
 
         card.forEach((p, idx) => {
             // Only show players who have batted
             if(p.balls > 0 || p.status === 'batting' || p.status === 'out' || p.runs > 0) {
                 const sr = p.balls > 0 ? ((p.runs / p.balls) * 100).toFixed(1) : '0.0';
                 
-                // Check if this player is on strike
+                // Check if this player is on strike (only for current innings)
                 const isStriker = (idx === strikerIndex);
                 const isNonStriker = (idx === nonStrikerIndex);
                 const isBatting = isStriker || isNonStriker;
@@ -543,7 +546,7 @@
                 // Add star for striker
                 const playerName = isStriker ? `${p.name} *` : p.name;
                 
-                // Show dismissal text only if player is out
+                // Show dismissal text if player is out
                 const dismissalInfo = (p.status === 'out' && p.dismissalText) ? 
                     `<div class="text-xs text-gray-500 mt-0.5">${p.dismissalText}</div>` : '';
 
