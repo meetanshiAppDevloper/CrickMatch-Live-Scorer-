@@ -32,6 +32,14 @@
       border-bottom: 3px solid transparent;
       color: #6B7280;
     }
+    /* Animation for modal */
+    @keyframes slide-up {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+    .animate-slide-up {
+        animation: slide-up 0.3s ease-out forwards;
+    }
   </style>
 </head>
 
@@ -125,7 +133,7 @@
         </div>
       </div>
       
-      <!-- ✅ NEW BUTTON: View Full Scorecard -->
+      <!-- ✅ View Full Scorecard Button -->
       <button id="view-scorecard-btn" class="hidden w-full mt-4 bg-white border-2 border-[#4A3A8C] text-[#4A3A8C] font-bold py-3 rounded-lg hover:bg-gray-50 shadow-sm transition">
         📄 View Full Scorecard
       </button>
@@ -281,12 +289,10 @@
     let globalInnings1Data = null;
     let globalInnings2Data = null;
 
-    // --- Tab Switching Logic (Global Scope) ---
+    // --- Tab Switching Logic ---
     window.switchTab = function(tabId) {
-      // Buttons
       const btn1 = document.getElementById('tab-btn-1');
       const btn2 = document.getElementById('tab-btn-2');
-      // Content
       const content1 = document.getElementById('innings-content-1');
       const content2 = document.getElementById('innings-content-2');
 
@@ -310,7 +316,7 @@
 
     openBtn.addEventListener('click', () => {
         modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden'; // Prevent body scroll
+        document.body.style.overflow = 'hidden'; 
     });
 
     closeBtn.addEventListener('click', () => {
@@ -349,7 +355,7 @@
       const openAppBtn = document.getElementById('open-app-btn');
       openAppBtn.style.display = 'block';
 
-      // --- Deep Link Logic (Unchanged) ---
+      // --- Deep Link Logic ---
       const originalButtonText = 'Open in CrickMatch App';
       function resetButtonState() {
           openAppBtn.disabled = false;
@@ -387,7 +393,6 @@
       
       const matchRef = doc(db, 'matches', matchId);
       
-      // 1. Listen to Match Data
       onSnapshot(matchRef, (matchDoc) => {
         if (matchDoc.exists()) {
           globalMatchData = matchDoc.data();
@@ -400,7 +405,6 @@
         showError("Unable to connect to Firebase.");
       });
 
-      // 2. Listen to Innings 1 Data
       onSnapshot(doc(db, 'matches', matchId, 'innings', '1'), (docSnapshot) => {
         if (docSnapshot.exists()) {
             globalInnings1Data = docSnapshot.data();
@@ -408,13 +412,12 @@
         }
       });
 
-      // 3. Listen to Innings 2 Data
       onSnapshot(doc(db, 'matches', matchId, 'innings', '2'), (docSnapshot) => {
         if (docSnapshot.exists()) {
             globalInnings2Data = docSnapshot.data();
             refreshAllViews();
         } else {
-            globalInnings2Data = null; // Reset if not started
+            globalInnings2Data = null;
             refreshAllViews();
         }
       });
@@ -432,22 +435,17 @@
     function refreshAllViews() {
         if(!globalMatchData) return;
 
-        // Determine which innings to show on the main card
         const currentInningsNum = globalMatchData.currentInnings || 1;
         let activeInningsData = (currentInningsNum === 2) ? globalInnings2Data : globalInnings1Data;
 
-        // If Innings 1 is done but Innings 2 doc hasn't arrived yet, we might want to stick to Innings 1 or show loading
-        // But usually activeInningsData will be defined. 
-        
         if (activeInningsData) {
             document.getElementById('loading').style.display = 'none';
             document.getElementById('error').classList.add('hidden');
             document.getElementById('scoreboard').classList.remove('hidden');
-            document.getElementById('view-scorecard-btn').classList.remove('hidden'); // Show the button
+            document.getElementById('view-scorecard-btn').classList.remove('hidden'); 
             updateScoreboard(globalMatchData, activeInningsData);
         }
 
-        // Update Full Scorecard Modal whenever data changes
         updateFullScorecard();
     }
 
@@ -457,12 +455,7 @@
 
         const { hostTeamName, visitorTeamName, tossWinner, optedTo } = globalMatchData.matchSetup;
         
-        // Determine Team Names Logic
-        // Innings 1 Team: Toss Winner if Bat, or Toss Loser if Bat
         let team1Name, team2Name;
-        
-        // Logic: if (TossWinner == Host && Opt == Bat) -> Host is Team 1
-        // if (TossWinner == Host && Opt == Bowl) -> Visitor is Team 1
         if ((tossWinner === hostTeamName && optedTo === 'bat') || (tossWinner === visitorTeamName && optedTo === 'bowl')) {
             team1Name = hostTeamName;
             team2Name = visitorTeamName;
@@ -479,7 +472,8 @@
             const b = globalInnings1Data.ballsBowled % 6;
             document.getElementById('team-score-1').innerText = `${globalInnings1Data.totalRuns}/${globalInnings1Data.wickets} (${o}.${b})`;
             
-            renderBattingTable(globalInnings1Data.battingCard, 'batting-body-1');
+            // Pass the striker index here
+            renderBattingTable(globalInnings1Data.battingCard, 'batting-body-1', globalInnings1Data.strikerIndex);
             renderBowlingTable(globalInnings1Data.bowlingCard, 'bowling-body-1');
             document.getElementById('extras-1').innerText = calculateExtras(globalInnings1Data);
         }
@@ -494,7 +488,8 @@
             const b = globalInnings2Data.ballsBowled % 6;
             document.getElementById('team-score-2').innerText = `${globalInnings2Data.totalRuns}/${globalInnings2Data.wickets} (${o}.${b})`;
 
-            renderBattingTable(globalInnings2Data.battingCard, 'batting-body-2');
+            // Pass the striker index here
+            renderBattingTable(globalInnings2Data.battingCard, 'batting-body-2', globalInnings2Data.strikerIndex);
             renderBowlingTable(globalInnings2Data.bowlingCard, 'bowling-body-2');
             document.getElementById('extras-2').innerText = calculateExtras(globalInnings2Data);
         } else {
@@ -504,43 +499,50 @@
     }
 
     function calculateExtras(data) {
-        // Just a placeholder if extras are detailed, otherwise return total extras if available
-        // If your DB has specific extras structure, sum them up. 
-        // Assuming 'extras' might be a field or sum of wides/nb etc.
         if (data.extrasSummary) {
             return data.extrasSummary.total || 0;
         }
-        // Fallback calculation if not stored directly
-        let total = 0;
-        // This depends on your data structure. Just returning 0 if not explicit.
-        return total; 
+        return 0; 
     }
 
-    function renderBattingTable(card, elementId) {
+    // ✅✅✅ UPDATED BATTING TABLE RENDERER ✅✅✅
+    function renderBattingTable(card, elementId, strikerIndex) {
         const tbody = document.getElementById(elementId);
         tbody.innerHTML = '';
         if (!card) return;
 
-        card.forEach(p => {
-            // Only show players who have batted (status is usually tracked, or check runs/balls)
-            // Or show everyone in list. Standard is to show those who played.
-            // Adjust condition based on your exact data structure preference.
-            const sr = p.balls > 0 ? ((p.runs / p.balls) * 100).toFixed(1) : '0.0';
-            const statusStyle = p.outStatus === 'not out' ? 'text-[#4A3A8C] font-semibold' : 'text-gray-800';
-            
-            // Check if player has data
+        card.forEach((p, index) => {
+            // Check if player has batted
             if(p.balls > 0 || p.status === 'batting' || p.status === 'out' || p.runs > 0) {
+                const sr = p.balls > 0 ? ((p.runs / p.balls) * 100).toFixed(1) : '0.0';
+                
+                // Logic for Striker: If index matches AND player is currently batting (not out)
+                const isStriker = (index === strikerIndex) && (p.outStatus === 'batting');
+                const nameText = isStriker ? `${p.name} *` : p.name;
+                const nameClass = isStriker ? 'text-[#4A3A8C] font-bold' : 'text-gray-900 font-semibold';
+
+                // Logic for Dismissal Text
+                let dismissalText = '';
+                if (p.outStatus === 'out') {
+                    // Use text from DB or fallback to just "Out"
+                    dismissalText = p.dismissalText || 'Out';
+                } else if (p.outStatus === 'batting') {
+                    dismissalText = 'Not Out';
+                } else {
+                    dismissalText = '';
+                }
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="py-2 px-3">
-                        <div class="${statusStyle}">${p.name}</div>
-                        <div class="text-xs text-gray-400">${p.dismissalText || ''}</div>
+                        <div class="${nameClass}">${nameText}</div>
+                        <div class="text-xs text-gray-500 font-medium lowercase first-letter:capitalize mt-0.5">${dismissalText}</div>
                     </td>
-                    <td class="py-2 px-1 text-right font-medium">${p.runs}</td>
-                    <td class="py-2 px-1 text-right text-gray-500">${p.balls}</td>
-                    <td class="py-2 px-1 text-right text-gray-500">${p.fours || 0}</td>
-                    <td class="py-2 px-1 text-right text-gray-500">${p.sixes || 0}</td>
-                    <td class="py-2 px-2 text-right text-gray-500">${sr}</td>
+                    <td class="py-2 px-1 text-right font-medium align-top pt-3">${p.runs}</td>
+                    <td class="py-2 px-1 text-right text-gray-500 align-top pt-3">${p.balls}</td>
+                    <td class="py-2 px-1 text-right text-gray-500 align-top pt-3">${p.fours || 0}</td>
+                    <td class="py-2 px-1 text-right text-gray-500 align-top pt-3">${p.sixes || 0}</td>
+                    <td class="py-2 px-2 text-right text-gray-500 align-top pt-3">${sr}</td>
                 `;
                 tbody.appendChild(tr);
             }
@@ -573,7 +575,7 @@
         });
     }
 
-    // --- Original Logic for Summary Card (Unchanged mostly) ---
+    // --- Original Logic for Summary Card ---
      function updateScoreboard(matchData, inningsData) {
       const { hostTeamName, visitorTeamName, tossWinner, optedTo } = matchData.matchSetup;
       document.getElementById('match-title').innerText = `${hostTeamName} vs ${visitorTeamName}`;
