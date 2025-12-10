@@ -516,53 +516,77 @@
         return `${total} (wd ${wd}, nb ${nb}, b ${b}, lb ${lb})`;
     }
 
-    function renderBattingTable(card, elementId) {
+  function renderBattingTable(card, elementId) {
         const tbody = document.getElementById(elementId);
         tbody.innerHTML = '';
         if (!card) return;
 
-        const currentInningsNum = globalMatchData?.currentInnings || 1;
-        const currentInningsData = (currentInningsNum === 2) ? globalInnings2Data : globalInnings1Data;
-        const strikerIndex = currentInningsData?.strikerIndex;
-        const nonStrikerIndex = currentInningsData?.nonStrikerIndex;
+        // ✅ સુધારો 1: ઇનિંગ્સ 1 કે 2 છે તે elementId પરથી નક્કી કરો
+        // આનાથી 1st Innings નો ડેટા જોતી વખતે 2nd Innings ના સ્ટ્રાઈકર મિક્સ નહિ થાય.
+        let specificInningsData = null;
+        if (elementId.includes('1')) {
+            specificInningsData = globalInnings1Data;
+        } else {
+            specificInningsData = globalInnings2Data;
+        }
+
+        const strikerIndex = specificInningsData?.strikerIndex;
+        const nonStrikerIndex = specificInningsData?.nonStrikerIndex;
 
         card.forEach((p, idx) => {
-            const isCurrentlyBatting = (idx === strikerIndex || idx === nonStrikerIndex);
-            if(p.balls > 0 || p.status === 'batting' || p.status === 'out' || p.runs > 0 || isCurrentlyBatting) {
+            const isStriker = (idx === strikerIndex);
+            const isNonStriker = (idx === nonStrikerIndex);
+            
+            // જો પ્લેયર હાલ રમતો હોય (Live) અથવા તેણે રન/બોલ રમ્યા હોય તો બતાવો
+            const shouldShow = (p.balls > 0 || p.runs > 0 || p.isOut || isStriker || isNonStriker);
+
+            if (shouldShow) {
                 const sr = p.balls > 0 ? ((p.runs / p.balls) * 100).toFixed(1) : '0.0';
                 
-                const isStriker = (idx === strikerIndex);
-                const isNonStriker = (idx === nonStrikerIndex);
-                const isBatting = isStriker || isNonStriker;
-                
-                const statusStyle = isBatting ? 'text-[#4A3A8C] font-semibold' : (p.status === 'out' ? 'text-gray-800' : 'text-gray-800');
-                const playerName = isStriker ? `${p.name} *` : p.name;
-                
+                let playerNameHtml = p.name;
+                let statusStyle = 'text-gray-800 font-medium';
                 let dismissalInfo = '';
+
+                // ✅ સુધારો 2: Perfect Dismissal Logic
+                
                 if (p.isOut) {
+                    // --- જો આઉટ હોય ---
+                    statusStyle = 'text-red-600 font-medium'; // લાલ કલર
+                    
+                    // આઉટ કેવી રીતે થયો તે ટેક્સ્ટ બનાવો
                     let dismissalText = 'out';
-                    // Firebase logic: you store 'fallOfWickets' array. 
-                    // We need to check if this player is in fallOfWickets.
                     
-                    // Note: Your current JSON structure doesn't show dismissalText inside battingCard directly.
-                    // It shows 'fallOfWickets' separately.
-                    // If you want detailed dismissal, we need to map fallOfWickets to players.
-                    // Since I don't have easy access to that array inside this loop without passing it,
-                    // I will use a simple check. If you have dismissal info in player object, use it.
-                    // Based on your previous snippet, you had logic to generate it.
-                    // Let's try to simulate that if data is available.
+                    // જો Firebase માં detailed dismissal type હોય તો
+                    if (p.dismissalType) {
+                         if (p.dismissalType === 'bowled') dismissalText = `b ${p.bowlerName || ''}`;
+                         else if (p.dismissalType === 'caught') dismissalText = `c ${p.fielderName || ''} b ${p.bowlerName || ''}`;
+                         else if (p.dismissalType === 'lbw') dismissalText = `lbw b ${p.bowlerName || ''}`;
+                         else if (p.dismissalType === 'runOut') dismissalText = `run out (${p.fielderName || ''})`;
+                         else if (p.dismissalType === 'stumped') dismissalText = `st ${p.fielderName || ''} b ${p.bowlerName || ''}`;
+                         else dismissalText = p.dismissalText || p.dismissalType;
+                    } 
+                    // જો direct fallOfWickets logic વાપરતા હોવ તો અહીં સિમ્પલ 'out' રાખો અથવા ઉપર મુજબ મેપિંગ કરો
                     
-                    dismissalInfo = `<div class="text-xs text-gray-500 mt-0.5 italic">out</div>`;
-                } else if (isBatting) {
-                    dismissalInfo = `<div class="text-xs text-[#4A3A8C] mt-0.5">not out</div>`;
+                    dismissalInfo = `<div class="text-xs text-gray-500 mt-0.5 italic">${dismissalText}</div>`;
+
+                } else if (p.isRetired) {
+                    // --- જો રિટાયર્ડ હોય ---
+                    statusStyle = 'text-gray-500';
+                    dismissalInfo = `<div class="text-xs text-gray-500 mt-0.5 italic">retired hurt</div>`;
+
                 } else {
-                    dismissalInfo = `<div class="text-xs text-gray-500 mt-0.5 italic">did not bat</div>`;
+                    // --- જો આઉટ નથી (Not Out) ---
+                    // ભલે ઇનિંગ્સ પૂરી થઈ ગઈ હોય, પણ જો તે આઉટ નથી તો નોટ આઉટ ગણાય
+                    statusStyle = 'text-[#4A3A8C] font-bold'; // જાંબલી અને બોલ્ડ
+                    playerNameHtml = `${p.name} *`; // નામ પાછળ સ્ટાર
+                    dismissalInfo = `<div class="text-xs text-[#4A3A8C] mt-0.5 font-medium">not out</div>`;
                 }
 
                 const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-100 hover:bg-gray-50 transition";
                 tr.innerHTML = `
                     <td class="py-2 px-3">
-                        <div class="${statusStyle}">${playerName}</div>
+                        <div class="${statusStyle}">${playerNameHtml}</div>
                         ${dismissalInfo}
                     </td>
                     <td class="py-2 px-1 text-right font-medium">${p.runs}</td>
