@@ -516,7 +516,7 @@
         return total; 
     }
 
-  function renderBattingTable(card, elementId) {
+function renderBattingTable(card, elementId) {
         const tbody = document.getElementById(elementId);
         tbody.innerHTML = '';
         if (!card) return;
@@ -539,14 +539,54 @@
                 const isBatting = isStriker || isNonStriker;
                 
                 // Style based on status
-                const statusStyle = isBatting ? 'text-[#4A3A8C] font-semibold' : 'text-gray-800';
+                const statusStyle = isBatting ? 'text-[#4A3A8C] font-semibold' : (p.status === 'out' ? 'text-gray-800' : 'text-gray-800');
                 
                 // Add star for striker
                 const playerName = isStriker ? `${p.name} *` : p.name;
                 
-                // Show dismissal text only if player is out
-                const dismissalInfo = (p.status === 'out' && p.dismissalText) ? 
-                    `<div class="text-xs text-gray-500 mt-0.5">${p.dismissalText}</div>` : '';
+                // Build dismissal text with enhanced formatting
+                let dismissalInfo = '';
+                if (p.status === 'out') {
+                    // Format: "b Bowler" or "c Fielder b Bowler" etc.
+                    if (p.dismissalType && p.bowlerName) {
+                        let dismissalText = '';
+                        
+                        if (p.dismissalType === 'bowled') {
+                            dismissalText = `b ${p.bowlerName}`;
+                        } else if (p.dismissalType === 'caught') {
+                            if (p.fielderName) {
+                                dismissalText = `c ${p.fielderName} b ${p.bowlerName}`;
+                            } else {
+                                dismissalText = `c & b ${p.bowlerName}`;
+                            }
+                        } else if (p.dismissalType === 'lbw') {
+                            dismissalText = `lbw b ${p.bowlerName}`;
+                        } else if (p.dismissalType === 'stumped') {
+                            if (p.fielderName) {
+                                dismissalText = `st ${p.fielderName} b ${p.bowlerName}`;
+                            } else {
+                                dismissalText = `st b ${p.bowlerName}`;
+                            }
+                        } else if (p.dismissalType === 'runOut') {
+                            if (p.fielderName) {
+                                dismissalText = `run out (${p.fielderName})`;
+                            } else {
+                                dismissalText = `run out`;
+                            }
+                        } else if (p.dismissalType === 'hitWicket') {
+                            dismissalText = `hit wicket b ${p.bowlerName}`;
+                        } else if (p.dismissalType === 'retired') {
+                            dismissalText = `retired hurt`;
+                        } else {
+                            // Fallback to dismissalText if available
+                            dismissalText = p.dismissalText || `${p.dismissalType}`;
+                        }
+                        
+                        dismissalInfo = `<div class="text-xs text-gray-600 mt-0.5 font-medium">${dismissalText}</div>`;
+                    } else if (p.dismissalText) {
+                        dismissalInfo = `<div class="text-xs text-gray-600 mt-0.5 font-medium">${p.dismissalText}</div>`;
+                    }
+                }
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
