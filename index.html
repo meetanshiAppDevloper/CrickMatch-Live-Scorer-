@@ -516,13 +516,12 @@
         return `${total} (wd ${wd}, nb ${nb}, b ${b}, lb ${lb})`;
     }
 
-  function renderBattingTable(card, elementId) {
+function renderBattingTable(card, elementId) {
         const tbody = document.getElementById(elementId);
         tbody.innerHTML = '';
         if (!card) return;
 
-        // ✅ સુધારો 1: ઇનિંગ્સ 1 કે 2 છે તે elementId પરથી નક્કી કરો
-        // આનાથી 1st Innings નો ડેટા જોતી વખતે 2nd Innings ના સ્ટ્રાઈકર મિક્સ નહિ થાય.
+        // ડેટા નક્કી કરો (Innings 1 or 2)
         let specificInningsData = null;
         if (elementId.includes('1')) {
             specificInningsData = globalInnings1Data;
@@ -537,7 +536,7 @@
             const isStriker = (idx === strikerIndex);
             const isNonStriker = (idx === nonStrikerIndex);
             
-            // જો પ્લેયર હાલ રમતો હોય (Live) અથવા તેણે રન/બોલ રમ્યા હોય તો બતાવો
+            // જો પ્લેયર રમ્યો હોય અથવા હાલ રમતો હોય તો જ બતાવો
             const shouldShow = (p.balls > 0 || p.runs > 0 || p.isOut || isStriker || isNonStriker);
 
             if (shouldShow) {
@@ -547,16 +546,11 @@
                 let statusStyle = 'text-gray-800 font-medium';
                 let dismissalInfo = '';
 
-                // ✅ સુધારો 2: Perfect Dismissal Logic
-                
                 if (p.isOut) {
                     // --- જો આઉટ હોય ---
-                    statusStyle = 'text-red-600 font-medium'; // લાલ કલર
-                    
-                    // આઉટ કેવી રીતે થયો તે ટેક્સ્ટ બનાવો
+                    statusStyle = 'text-red-600 font-medium'; 
                     let dismissalText = 'out';
                     
-                    // જો Firebase માં detailed dismissal type હોય તો
                     if (p.dismissalType) {
                          if (p.dismissalType === 'bowled') dismissalText = `b ${p.bowlerName || ''}`;
                          else if (p.dismissalType === 'caught') dismissalText = `c ${p.fielderName || ''} b ${p.bowlerName || ''}`;
@@ -564,9 +558,7 @@
                          else if (p.dismissalType === 'runOut') dismissalText = `run out (${p.fielderName || ''})`;
                          else if (p.dismissalType === 'stumped') dismissalText = `st ${p.fielderName || ''} b ${p.bowlerName || ''}`;
                          else dismissalText = p.dismissalText || p.dismissalType;
-                    } 
-                    // જો direct fallOfWickets logic વાપરતા હોવ તો અહીં સિમ્પલ 'out' રાખો અથવા ઉપર મુજબ મેપિંગ કરો
-                    
+                    }
                     dismissalInfo = `<div class="text-xs text-gray-500 mt-0.5 italic">${dismissalText}</div>`;
 
                 } else if (p.isRetired) {
@@ -575,10 +567,16 @@
                     dismissalInfo = `<div class="text-xs text-gray-500 mt-0.5 italic">retired hurt</div>`;
 
                 } else {
-                    // --- જો આઉટ નથી (Not Out) ---
-                    // ભલે ઇનિંગ્સ પૂરી થઈ ગઈ હોય, પણ જો તે આઉટ નથી તો નોટ આઉટ ગણાય
-                    statusStyle = 'text-[#4A3A8C] font-bold'; // જાંબલી અને બોલ્ડ
-                    playerNameHtml = `${p.name} *`; // નામ પાછળ સ્ટાર
+                    // --- જો નોટ આઉટ હોય ---
+                    statusStyle = 'text-[#4A3A8C] font-bold'; 
+                    
+                    // ✅✅✅ ફેરફાર: ફક્ત સ્ટ્રાઈકરને જ સ્ટાર (*) આપવો
+                    if (isStriker) {
+                        playerNameHtml = `${p.name} *`;
+                    } else {
+                        playerNameHtml = p.name; // Non-striker ને સ્ટાર નહિ
+                    }
+                    
                     dismissalInfo = `<div class="text-xs text-[#4A3A8C] mt-0.5 font-medium">not out</div>`;
                 }
 
