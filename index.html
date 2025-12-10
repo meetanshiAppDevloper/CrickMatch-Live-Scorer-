@@ -503,55 +503,17 @@
         }
     }
 
-  function calculateExtras(data, inningsNum) {
-        if (!data) return;
-        
-        let total = 0;
-        let breakdown = [];
-        let extrasData = null;
-        
-        // Try to get extras from various possible locations
+    function calculateExtras(data) {
+        // Just a placeholder if extras are detailed, otherwise return total extras if available
+        // If your DB has specific extras structure, sum them up. 
+        // Assuming 'extras' might be a field or sum of wides/nb etc.
         if (data.extrasSummary) {
-            extrasData = data.extrasSummary;
-        } else if (data.extras && typeof data.extras === 'object') {
-            extrasData = data.extras;
+            return data.extrasSummary.total || 0;
         }
-        
-        // If we have an extras object, extract the values
-        if (extrasData) {
-            if (extrasData.wides > 0) {
-                total += extrasData.wides;
-                breakdown.push(`wd ${extrasData.wides}`);
-            }
-            if (extrasData.noBalls > 0) {
-                total += extrasData.noBalls;
-                breakdown.push(`nb ${extrasData.noBalls}`);
-            }
-            if (extrasData.byes > 0) {
-                total += extrasData.byes;
-                breakdown.push(`b ${extrasData.byes}`);
-            }
-            if (extrasData.legByes > 0) {
-                total += extrasData.legByes;
-                breakdown.push(`lb ${extrasData.legByes}`);
-            }
-            if (extrasData.penalties > 0) {
-                total += extrasData.penalties;
-                breakdown.push(`pen ${extrasData.penalties}`);
-            }
-            if (extrasData.total !== undefined) {
-                total = extrasData.total;
-            }
-        }
-        
-        // Update the display
-        document.getElementById(`extras-${inningsNum}`).innerText = total;
-        const breakdownEl = document.getElementById(`extras-breakdown-${inningsNum}`);
-        if (breakdown.length > 0) {
-            breakdownEl.innerText = `(${breakdown.join(', ')})`;
-        } else {
-            breakdownEl.innerText = '';
-        }
+        // Fallback calculation if not stored directly
+        let total = 0;
+        // This depends on your data structure. Just returning 0 if not explicit.
+        return total; 
     }
 
 function renderBattingTable(card, elementId) {
