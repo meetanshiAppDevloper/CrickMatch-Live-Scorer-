@@ -503,17 +503,28 @@
         }
     }
 
-    function calculateExtras(data) {
-        // Just a placeholder if extras are detailed, otherwise return total extras if available
-        // If your DB has specific extras structure, sum them up. 
-        // Assuming 'extras' might be a field or sum of wides/nb etc.
-        if (data.extrasSummary) {
-            return data.extrasSummary.total || 0;
+   function calculateExtras(data) {
+        if (!data) return 0;
+        
+        // Check for extrasSummary object with total
+        if (data.extrasSummary && typeof data.extrasSummary.total !== 'undefined') {
+            return data.extrasSummary.total;
         }
-        // Fallback calculation if not stored directly
+        
+        // Check if extras is stored as a direct number field
+        if (typeof data.extras !== 'undefined') {
+            return data.extras;
+        }
+        
+        // Calculate from individual extras if available
         let total = 0;
-        // This depends on your data structure. Just returning 0 if not explicit.
-        return total; 
+        if (data.wides) total += data.wides;
+        if (data.noBalls) total += data.noBalls;
+        if (data.byes) total += data.byes;
+        if (data.legByes) total += data.legByes;
+        if (data.penalties) total += data.penalties;
+        
+        return total;
     }
 
 function renderBattingTable(card, elementId) {
