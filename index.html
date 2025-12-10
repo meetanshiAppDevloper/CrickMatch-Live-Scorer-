@@ -516,7 +516,7 @@
         return total; 
     }
 
-   function renderBattingTable(card, elementId) {
+  function renderBattingTable(card, elementId) {
         const tbody = document.getElementById(elementId);
         tbody.innerHTML = '';
         if (!card) return;
@@ -528,8 +528,9 @@
         const nonStrikerIndex = currentInningsData?.nonStrikerIndex;
 
         card.forEach((p, idx) => {
-            // Only show players who have batted
-            if(p.balls > 0 || p.status === 'batting' || p.status === 'out' || p.runs > 0) {
+            // Show players who are currently batting (striker/non-striker) OR have batted OR are out
+            const isCurrentlyBatting = (idx === strikerIndex || idx === nonStrikerIndex);
+            if(p.balls > 0 || p.status === 'batting' || p.status === 'out' || p.runs > 0 || isCurrentlyBatting) {
                 const sr = p.balls > 0 ? ((p.runs / p.balls) * 100).toFixed(1) : '0.0';
                 
                 // Check if this player is on strike
