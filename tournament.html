@@ -40,66 +40,76 @@
 </head>
 <body class="pb-24">
 
-    <!-- Header -->
-    <div class="bg-purple-main text-white p-6 text-center shadow-lg">
-        <h1 id="tournament-name" class="text-xl font-extrabold uppercase tracking-widest">Tournament</h1>
-        <p id="tournament-detail" class="text-[10px] opacity-70 mt-1 font-medium tracking-wider"></p>
+    <!-- ✅ Match ID Not Found Screen (Hidden by default) -->
+    <div id="no-match-screen" class="hidden fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center p-6 text-center">
+        <div class="bg-red-100 p-5 rounded-full mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">Tournament Not Found</h1>
+        <p class="text-gray-600 max-w-xs mx-auto">This tournament has been deleted or the link is invalid. Please contact the organizer.</p>
     </div>
 
-    <!-- Navigation Tabs -->
-    <div class="bg-white border-b sticky top-0 z-40 shadow-sm">
-        <div class="flex justify-around max-w-md mx-auto">
-            <button onclick="switchTab('fixtures')" id="tab-fixtures" class="py-4 px-2 text-xs font-bold uppercase tracking-wider tab-active">Matches</button>
-            <button onclick="switchTab('teams')" id="tab-teams" class="py-4 px-2 text-xs font-bold uppercase tracking-wider text-gray-400">Teams</button>
-            <button onclick="switchTab('standings')" id="tab-standings" class="py-4 px-2 text-xs font-bold uppercase tracking-wider text-gray-400">Table</button>
-            <button onclick="switchTab('stats')" id="tab-stats" class="py-4 px-2 text-xs font-bold uppercase tracking-wider text-gray-400">Stats</button>
-        </div>
-    </div>
-
-    <!-- Content Area -->
-    <div class="max-w-md mx-auto p-4 space-y-4">
-        
-        <div id="content-fixtures" class="space-y-4">
-            <div id="fixtures-list" class="space-y-4"></div>
+    <!-- ✅ Main Dashboard Content -->
+    <div id="main-dashboard">
+        <!-- Header -->
+        <div class="bg-purple-main text-white p-6 text-center shadow-lg">
+            <h1 id="tournament-name" class="text-xl font-extrabold uppercase tracking-widest">Tournament</h1>
+            <p id="tournament-detail" class="text-[10px] opacity-70 mt-1 font-medium tracking-wider"></p>
         </div>
 
-        <div id="content-teams" class="hidden grid grid-cols-2 gap-4">
-            <div id="teams-list" class="contents"></div>
-        </div>
-
-        <!-- ✅ Standings Tab (Detailed Table) -->
-        <div id="content-standings" class="hidden">
-            <div class="fixture-card overflow-x-auto">
-                <table class="w-full text-[11px]">
-                    <thead class="bg-gray-50 border-b border-gray-100">
-                        <tr class="text-gray-400 font-bold uppercase">
-                            <th class="p-3 text-left"># Team</th>
-                            <th class="p-2 text-center">P</th>
-                            <th class="p-2 text-center">W</th>
-                            <th class="p-2 text-center">L</th>
-                            <th class="p-2 text-center">D</th>
-                            <th class="p-2 text-center">NRR</th>
-                            <th class="p-3 text-right">Pts</th>
-                        </tr>
-                    </thead>
-                    <tbody id="standings-body" class="divide-y divide-gray-50 font-semibold"></tbody>
-                </table>
-            </div>
-            <div class="mt-4 px-2 flex justify-center gap-4 text-[9px] font-bold text-gray-400 uppercase tracking-tighter">
-                <span>W: 2 Pts</span>
-                <span>D: 1 Pt</span>
-                <span>L: 0 Pts</span>
+        <!-- Navigation Tabs -->
+        <div class="bg-white border-b sticky top-0 z-40 shadow-sm">
+            <div class="flex justify-around max-w-md mx-auto">
+                <button onclick="switchTab('fixtures')" id="tab-fixtures" class="py-4 px-2 text-xs font-bold uppercase tracking-wider tab-active">Matches</button>
+                <button onclick="switchTab('teams')" id="tab-teams" class="py-4 px-2 text-xs font-bold uppercase tracking-wider text-gray-400">Teams</button>
+                <button onclick="switchTab('standings')" id="tab-standings" class="py-4 px-2 text-xs font-bold uppercase tracking-wider text-gray-400">Table</button>
+                <button onclick="switchTab('stats')" id="tab-stats" class="py-4 px-2 text-xs font-bold uppercase tracking-wider text-gray-400">Stats</button>
             </div>
         </div>
 
-        <div id="content-stats" class="hidden space-y-4 font-bold">
-            <div class="fixture-card p-5 border-t-4 border-purple-800">
-                <h3 class="text-purple-main text-xs uppercase mb-4 tracking-widest">Most Runs</h3>
-                <div id="top-batsmen" class="space-y-3"></div>
+        <!-- Content Area -->
+        <div class="max-w-md mx-auto p-4 space-y-4">
+            <div id="content-fixtures" class="space-y-4">
+                <div id="fixtures-list" class="space-y-4"></div>
             </div>
-            <div class="fixture-card p-5 border-t-4 border-orange-500">
-                <h3 class="text-orange-600 text-xs uppercase mb-4 tracking-widest">Most Wickets</h3>
-                <div id="top-bowlers" class="space-y-3"></div>
+
+            <div id="content-teams" class="hidden grid grid-cols-2 gap-4">
+                <div id="teams-list" class="contents"></div>
+            </div>
+
+            <div id="content-standings" class="hidden">
+                <div class="fixture-card overflow-x-auto">
+                    <table class="w-full text-[11px]">
+                        <thead class="bg-gray-50 border-b border-gray-100">
+                            <tr class="text-gray-400 font-bold uppercase">
+                                <th class="p-3 text-left"># Team</th>
+                                <th class="p-2 text-center">P</th>
+                                <th class="p-2 text-center">W</th>
+                                <th class="p-2 text-center">L</th>
+                                <th class="p-2 text-center">D</th>
+                                <th class="p-2 text-center">NRR</th>
+                                <th class="p-3 text-right">Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody id="standings-body" class="divide-y divide-gray-50 font-semibold"></tbody>
+                    </table>
+                </div>
+                <div class="mt-4 px-2 flex justify-center gap-4 text-[9px] font-bold text-gray-400 uppercase tracking-tighter">
+                    <span>W: 2 Pts</span><span>D: 1 Pt</span><span>L: 0 Pts</span>
+                </div>
+            </div>
+
+            <div id="content-stats" class="hidden space-y-4 font-bold">
+                <div class="fixture-card p-5 border-t-4 border-purple-800">
+                    <h3 class="text-purple-main text-xs uppercase mb-4 tracking-widest">Most Runs</h3>
+                    <div id="top-batsmen" class="space-y-3"></div>
+                </div>
+                <div class="fixture-card p-5 border-t-4 border-orange-500">
+                    <h3 class="text-orange-600 text-xs uppercase mb-4 tracking-widest">Most Wickets</h3>
+                    <div id="top-bowlers" class="space-y-3"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -113,9 +123,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-            <div id="player-list" class="p-4 max-h-[60vh] overflow-y-auto space-y-2">
-                <div class="text-center text-gray-400 text-xs py-4">Loading players...</div>
-            </div>
+            <div id="player-list" class="p-4 max-h-[60vh] overflow-y-auto space-y-2"></div>
             <div class="p-4 bg-gray-50 border-t">
                 <button onclick="closeModal()" class="w-full bg-purple-main text-white py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest">Close</button>
             </div>
@@ -150,11 +158,17 @@
         const ownerId = params.get('ownerId');
 
         if (tId && ownerId) {
+            // ✅ Listen for Tournament Document
             onSnapshot(doc(db, "users", ownerId, "tournaments", tId), (d) => {
                 if(d.exists()){
                     const data = d.data();
                     document.getElementById('tournament-name').innerText = data.name;
                     document.getElementById('tournament-detail').innerText = `${data.groundName} • ${data.city}`;
+                } else {
+                    // 🔥 જો ટુર્નામેન્ટ ડિલીટ થઈ જાય તો
+                    document.getElementById('main-dashboard').classList.add('hidden');
+                    document.getElementById('open-app-btn').parentElement.classList.add('hidden');
+                    document.getElementById('no-match-screen').classList.remove('hidden');
                 }
             });
 
@@ -165,17 +179,9 @@
                     const f = doc.data();
                     const isLive = f.status === 'Live';
                     const isDone = f.status === 'Completed';
-                    let stripColor = "bg-blue-400";
-                    let badgeClass = "bg-blue-50 text-blue-600";
-                    let actionBtn = "";
-                    if(isLive) {
-                        stripColor = "bg-red-500"; badgeClass = "bg-red-50 text-red-600 animate-pulse";
-                        actionBtn = `<button onclick="viewMatch('${f.matchId}')" class="btn-action bg-red-500 uppercase">View</button>`;
-                    } else if(isDone) {
-                          stripColor = "bg-green-500"; 
-    badgeClass = "bg-green-600 text-white";
-    actionBtn = `<button onclick="viewMatch('${f.matchId}')" class="btn-action bg-green-600 uppercase">Scorecard</button>`;
-                    }
+                    let stripColor = "bg-blue-400"; let badgeClass = "bg-blue-50 text-blue-600"; let actionBtn = "";
+                    if(isLive) { stripColor = "bg-red-500"; badgeClass = "bg-red-50 text-red-600 animate-pulse"; actionBtn = `<button onclick="viewMatch('${f.matchId}')" class="btn-action bg-red-500 uppercase">View</button>`; }
+                    else if(isDone) { stripColor = "bg-green-500"; badgeClass = "bg-green-50 text-green-600"; actionBtn = `<button onclick="viewMatch('${f.matchId}')" class="btn-action bg-green-600 uppercase">Scorecard</button>`; }
                     list.innerHTML += `<div class="fixture-card shadow-sm"><div class="top-strip ${stripColor}"></div><div class="p-4"><div class="flex justify-between items-center mb-4"><span class="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider">MATCH ${f.matchNo}</span><span class="${badgeClass} text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-tighter">${f.status}</span></div><div class="flex items-center justify-between px-2"><div class="flex flex-col items-center w-24"><div class="team-logo-circle mb-2">${f.teamA_name.charAt(0)}</div><span class="text-[11px] font-bold text-center truncate w-full uppercase">${f.teamA_name}</span></div><div class="vs-text italic">VS</div><div class="flex flex-col items-center w-24"><div class="team-logo-circle mb-2">${f.teamB_name.charAt(0)}</div><span class="text-[11px] font-bold text-center truncate w-full uppercase">${f.teamB_name}</span></div></div>${f.resultSummary ? `<div class="mt-4 pt-3 border-t border-dashed border-gray-100 text-center text-[10px] text-purple-main font-bold italic">${f.resultSummary}</div>` : ''}<div class="mt-4 flex justify-between items-center pt-2"><div class="text-[9px] font-bold text-gray-400">${f.matchDate || 'TBD'} • ${f.matchTime || ''}</div>${actionBtn}</div></div></div>`;
                 });
             });
@@ -185,58 +191,33 @@
                 list.innerHTML = '';
                 snap.forEach(doc => {
                     const t = doc.data();
-                    list.innerHTML += `<div onclick="showPlayers('${doc.id}', '${t.teamName.replace(/'/g, "\\'")}')" class="fixture-card p-4 flex flex-col items-center justify-center gap-2 cursor-pointer active:scale-95 transition-transform hover:border-purple-200">
-                        <div class="w-10 h-10 bg-purple-50 text-purple-main rounded-lg flex items-center justify-center font-black">${t.teamName.charAt(0)}</div>
-                        <span class="text-[10px] font-bold uppercase truncate w-full text-center">${t.teamName}</span>
-                    </div>`;
+                    list.innerHTML += `<div onclick="showPlayers('${doc.id}', '${t.teamName.replace(/'/g, "\\'")}')" class="fixture-card p-4 flex flex-col items-center justify-center gap-2 cursor-pointer active:scale-95 transition-transform hover:border-purple-200"><div class="w-10 h-10 bg-purple-50 text-purple-main rounded-lg flex items-center justify-center font-black">${t.teamName.charAt(0)}</div><span class="text-[10px] font-bold uppercase truncate w-full text-center">${t.teamName}</span></div>`;
                 });
             });
 
-            // ✅ Detailed Standings Logic
             onSnapshot(query(collection(db, "users", ownerId, "tournaments", tId, "standings"), orderBy("points", "desc")), (snap) => {
                 const body = document.getElementById('standings-body');
-                body.innerHTML = '';
-                let rank = 1;
+                body.innerHTML = ''; let rank = 1;
                 snap.forEach(doc => {
-                    const s = doc.data();
-                    const nrr = (s.nrr || 0).toFixed(3);
-                    const nrrColor = s.nrr >= 0 ? 'text-blue-500' : 'text-red-500';
-                    body.innerHTML += `
-                        <tr class="hover:bg-gray-50 border-b border-gray-50">
-                            <td class="p-3 text-left">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-[9px] text-gray-300 font-bold">${rank}</span>
-                                    <span class="font-bold text-slate-700 uppercase tracking-tighter truncate w-20">${s.teamName}</span>
-                                </div>
-                            </td>
-                            <td class="p-2 text-center text-slate-500">${s.played || 0}</td>
-                            <td class="p-2 text-center text-slate-500">${s.won || 0}</td>
-                            <td class="p-2 text-center text-slate-500">${s.lost || 0}</td>
-                            <td class="p-2 text-center text-slate-500">${s.draw || 0}</td>
-                            <td class="p-2 text-center font-mono ${nrrColor}">${nrr}</td>
-                            <td class="p-3 text-right font-black text-purple-main text-[13px]">${s.points || 0}</td>
-                        </tr>`;
+                    const s = doc.data(); const nrr = (s.nrr || 0).toFixed(3); const nrrColor = s.nrr >= 0 ? 'text-blue-500' : 'text-red-500';
+                    body.innerHTML += `<tr class="hover:bg-gray-50 border-b border-gray-50"><td class="p-3 text-left"><div class="flex items-center gap-1.5"><span class="text-[9px] text-gray-300 font-bold">${rank}</span><span class="font-bold text-slate-700 uppercase tracking-tighter truncate w-20">${s.teamName}</span></div></td><td class="p-2 text-center text-slate-500">${s.played || 0}</td><td class="p-2 text-center text-slate-500">${s.won || 0}</td><td class="p-2 text-center text-slate-500">${s.lost || 0}</td><td class="p-2 text-center text-slate-500">${s.draw || 0}</td><td class="p-2 text-center font-mono ${nrrColor}">${nrr}</td><td class="p-3 text-right font-black text-purple-main text-[13px]">${s.points || 0}</td></tr>`;
                     rank++;
                 });
             });
 
             onSnapshot(query(collection(db, "users", ownerId, "tournaments", tId, "playerStats"), orderBy("runs", "desc")), (snap) => {
                 const list = document.getElementById('top-batsmen');
-                list.innerHTML = '';
-                let i = 0;
+                list.innerHTML = ''; let i = 0;
                 snap.forEach(doc => { if(i < 5) { const p = doc.data(); list.innerHTML += `<div class="flex justify-between items-center text-xs"><span class="text-slate-600 font-medium">${p.playerName}</span><span class="bg-purple-50 text-purple-main px-2 py-1 rounded font-black">${p.runs}</span></div>`; i++; } });
             });
 
             onSnapshot(query(collection(db, "users", ownerId, "tournaments", tId, "playerStats"), orderBy("wickets", "desc")), (snap) => {
                 const list = document.getElementById('top-bowlers');
-                list.innerHTML = '';
-                let i = 0;
+                list.innerHTML = ''; let i = 0;
                 snap.forEach(doc => { if(i < 5) { const p = doc.data(); list.innerHTML += `<div class="flex justify-between items-center text-xs"><span class="text-slate-600 font-medium">${p.playerName}</span><span class="bg-orange-50 text-orange-600 px-2 py-1 rounded font-black">${p.wickets}</span></div>`; i++; } });
             });
 
-            document.getElementById('open-app-btn').onclick = () => {
-                window.location.href = `cricketscorer://tournament?id=${tId}&ownerId=${ownerId}`;
-            };
+            document.getElementById('open-app-btn').onclick = () => { window.location.href = `cricketscorer://tournament?id=${tId}&ownerId=${ownerId}`; };
 
             window.showPlayers = async (teamId, teamName) => {
                 const modal = document.getElementById('player-modal');
