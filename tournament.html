@@ -217,7 +217,34 @@
                 snap.forEach(doc => { if(i < 5) { const p = doc.data(); list.innerHTML += `<div class="flex justify-between items-center text-xs"><span class="text-slate-600 font-medium">${p.playerName}</span><span class="bg-orange-50 text-orange-600 px-2 py-1 rounded font-black">${p.wickets}</span></div>`; i++; } });
             });
 
-            document.getElementById('open-app-btn').onclick = () => { window.location.href = `cricketscorer://tournament?id=${tId}&ownerId=${ownerId}`; };
+           document.getElementById('open-app-btn').onclick = () => {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const playStoreUrl = "https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch";
+    const appStoreUrl = "https://apps.apple.com/us/app/crickmatch-live-scorer/id6755029198";
+
+    // --- Android Logic (Intent) ---
+    if (/android/i.test(userAgent)) {
+        // આ એન્ડ્રોઇડ માટે બેસ્ટ રીત છે: જો એપ હશે તો ખુલશે, નહીંતર સીધું પ્લે સ્ટોર પર જશે
+        const intentUrl = `intent://tournament?id=${tId}&ownerId=${ownerId}#Intent;scheme=cricketscorer;package=com.meetanshi.crickmatch;S.browser_fallback_url=${playStoreUrl};end`;
+        window.location.href = intentUrl;
+    } 
+    // --- iOS Logic (iPhone/iPad) ---
+    else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+        // આઇફોન માટે કસ્ટમ સ્કીમ
+        window.location.href = `cricketscorer://tournament?id=${tId}&ownerId=${ownerId}`;
+        
+        // જો ૨.૫ સેકન્ડમાં એપ ના ખુલે તો એપ સ્ટોર પર રીડાયરેક્ટ કરો
+        setTimeout(() => {
+            if (!document.hidden) {
+                window.location.href = appStoreUrl;
+            }
+        }, 2500);
+    } 
+    // --- Desktop/Other ---
+    else {
+        alert("Please open this link on your mobile device to view in the CrickMatch app.");
+    }
+};
 
             window.showPlayers = async (teamId, teamName) => {
                 const modal = document.getElementById('player-modal');
@@ -246,7 +273,20 @@
             };
         }
 
-        window.viewMatch = (mId) => { window.location.href = `index.html?matchId=${mId}`; };
+       window.viewMatch = (mId) => {
+    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+    const playStoreUrl = "https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch";
+
+    if (/android/i.test(userAgent)) {
+        window.location.href = `intent://match?id=${mId}#Intent;scheme=cricketscorer;package=com.meetanshi.crickmatch;S.browser_fallback_url=${playStoreUrl};end`;
+    } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+        window.location.href = `cricketscorer://match?id=${mId}`;
+        setTimeout(() => { if (!document.hidden) window.location.href = "https://apps.apple.com/us/app/crickmatch-live-scorer/id6755029198"; }, 2500);
+    } else {
+        // ડેસ્કટોપ પર હોય તો વેબ લિંક ખોલો
+        window.location.href = `index.html?matchId=${mId}`;
+    }
+};
         window.switchTab = (tab) => {
             ['fixtures', 'teams', 'standings', 'stats'].forEach(t => {
                 document.getElementById(`content-${t}`).classList.add('hidden');
