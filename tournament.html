@@ -5,180 +5,189 @@
     <title>CrickMatch Pro Center</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Bebas+Neue&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #4A3A8C; /* Original Purple Color */
-            --primary-dark: #372b6b;
-            --accent: #634cb5;
+            --primary: #4A3A8C;
+            --secondary: #634cb5;
+            --surface: #ffffff;
+            --bg: #f1f5f9;
         }
         body { 
             font-family: 'Outfit', sans-serif; 
-            background-color: #f8fafc;
-            color: #1e293b;
+            background-color: var(--bg);
+            color: #0f172a;
             -webkit-tap-highlight-color: transparent;
         }
-        /* New Gradient Header based on Original Color */
-        .header-gradient {
+        .header-curve {
             background: linear-gradient(135deg, #4A3A8C 0%, #634cb5 100%);
+            border-bottom-left-radius: 3rem;
+            border-bottom-right-radius: 3rem;
+            box-shadow: 0 10px 25px -5px rgba(74, 58, 140, 0.3);
         }
-        
-        .glass-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-        }
-
-        /* Full Width Tabs Styling */
-        .tab-container {
+        .tab-sticky {
             position: sticky;
             top: 0;
-            z-index: 40;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid #e2e8f0;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
         }
-        
-        .tab-btn { 
+        .tab-btn {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
-            color: #64748b;
-            transition: all 0.3s ease;
         }
-        
-        .tab-active { 
-            color: #4A3A8C; 
-            font-weight: 700;
+        .tab-active {
+            color: var(--primary);
+            font-weight: 800;
+            transform: scale(1.1);
         }
-        
-        /* Animated underline for tabs */
         .tab-active::after {
             content: '';
             position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background-color: #4A3A8C;
-            border-radius: 3px 3px 0 0;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: var(--primary);
+            border-radius: 50%;
         }
-
-        .live-pulse {
+        .match-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(226, 232, 240, 0.5);
+        }
+        .match-card:active { transform: scale(0.97); }
+        .vs-badge {
+            font-family: 'Bebas Neue', cursive;
+            background: #f8fafc;
+            color: #cbd5e1;
+            padding: 4px 10px;
+            border-radius: 12px;
+            border: 1px solid #f1f5f9;
+        }
+        .team-initial {
+            width: 54px;
+            height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.5rem;
+            border-radius: 18px;
+            box-shadow: 0 8px 15px -3px rgba(0,0,0,0.1);
+        }
+        .status-live {
+            background: #ef4444;
+            color: white;
             animation: pulse-red 2s infinite;
         }
         @keyframes pulse-red {
-            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-            70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+            70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
-        
+        .rank-badge {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: 800;
+        }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="pb-32 select-none">
+<body class="pb-28">
 
-    <!-- Header Section (Original Purple) -->
-    <div class="header-gradient text-white pt-8 pb-10 px-6 relative overflow-hidden rounded-b-[2rem] shadow-lg">
-        <!-- Abstract Decoration -->
-        <div class="absolute top-0 right-0 w-64 h-64 bg-white rounded-full mix-blend-overlay filter blur-3xl opacity-10 -mr-16 -mt-16"></div>
-        <div class="absolute bottom-0 left-0 w-48 h-48 bg-purple-900 rounded-full mix-blend-overlay filter blur-3xl opacity-20 -ml-10 -mb-10"></div>
-
-        <div class="relative z-10 text-center">
-            <div class="inline-flex items-center gap-1.5 py-1 px-3 rounded-full bg-white/10 border border-white/20 mb-3 backdrop-blur-sm">
-                <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
-                <span class="text-[10px] font-bold tracking-widest uppercase text-white/90">Live Center</span>
+    <!-- Professional Header -->
+    <div class="header-curve text-white pt-12 pb-20 px-8 relative overflow-hidden">
+        <div class="absolute top-[-10%] right-[-10%] w-48 h-48 bg-white/10 rounded-full blur-3xl"></div>
+        <div class="relative z-10">
+            <div class="flex items-center justify-center gap-2 mb-4">
+                <span class="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-[0.2em]">Official Tournament</span>
             </div>
-            <h1 id="tournament-name" class="text-3xl font-black tracking-tight leading-tight mb-2 drop-shadow-md">
-                <span class="animate-pulse opacity-80">Loading...</span>
-            </h1>
-            <div class="flex items-center justify-center gap-2 text-purple-100 text-xs font-medium uppercase tracking-wide opacity-90">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                <span id="tournament-detail">Fetching Location...</span>
+            <h1 id="tournament-name" class="text-3xl font-extrabold text-center tracking-tight mb-2 drop-shadow-lg">Loading...</h1>
+            <div class="flex items-center justify-center gap-2 text-white/70 text-xs font-medium">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                <span id="tournament-detail" class="tracking-wide">Fetching Location...</span>
             </div>
         </div>
     </div>
 
-    <!-- Full Width Sticky Tabs -->
-    <div class="tab-container shadow-sm">
-        <div class="max-w-md mx-auto flex justify-between items-center overflow-x-auto no-scrollbar">
-            <button onclick="switchTab('fixtures')" id="tab-fixtures" class="tab-btn tab-active flex-1 py-4 text-xs font-bold uppercase tracking-wider text-center">Matches</button>
-            <button onclick="switchTab('teams')" id="tab-teams" class="tab-btn flex-1 py-4 text-xs font-bold uppercase tracking-wider text-center">Teams</button>
-            <button onclick="switchTab('standings')" id="tab-standings" class="tab-btn flex-1 py-4 text-xs font-bold uppercase tracking-wider text-center">Table</button>
-            <button onclick="switchTab('stats')" id="tab-stats" class="tab-btn flex-1 py-4 text-xs font-bold uppercase tracking-wider text-center">Stats</button>
+    <!-- Modern Sticky Navigation -->
+    <div class="tab-sticky -mt-8 mx-6 rounded-3xl shadow-xl border-none">
+        <div class="flex justify-around items-center px-2">
+            <button onclick="switchTab('fixtures')" id="tab-fixtures" class="tab-btn tab-active py-5 px-3 text-[11px] font-bold uppercase tracking-wider">Matches</button>
+            <button onclick="switchTab('teams')" id="tab-teams" class="tab-btn py-5 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">Teams</button>
+            <button onclick="switchTab('standings')" id="tab-standings" class="tab-btn py-5 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">Table</button>
+            <button onclick="switchTab('stats')" id="tab-stats" class="tab-btn py-5 px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">Stats</button>
         </div>
     </div>
 
     <!-- Main Content -->
-    <div class="max-w-md mx-auto p-4 mt-2 space-y-6 min-h-[50vh]">
+    <div class="max-w-md mx-auto p-5 mt-4">
         
-        <!-- 1. Fixtures Section -->
-        <div id="content-fixtures" class="space-y-4 animate-fade-in">
-            <div id="fixtures-list" class="space-y-4 pb-4"></div>
+        <!-- Fixtures Tab -->
+        <div id="content-fixtures" class="space-y-5">
+            <div id="fixtures-list" class="space-y-5"></div>
         </div>
 
-        <!-- 2. Teams Section -->
-        <div id="content-teams" class="hidden animate-fade-in">
-             <div class="grid grid-cols-2 gap-4" id="teams-list"></div>
+        <!-- Teams Tab -->
+        <div id="content-teams" class="hidden">
+            <div class="grid grid-cols-2 gap-4" id="teams-list"></div>
         </div>
 
-        <!-- 3. Standings Section -->
-        <div id="content-standings" class="hidden animate-fade-in">
-            <div class="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100">
-                <div class="bg-[#4A3A8C] p-3 text-white flex justify-between items-center">
-                    <h3 class="font-bold text-sm uppercase tracking-wider">Points Table</h3>
-                </div>
-                <table class="w-full text-sm">
+        <!-- Standings Tab -->
+        <div id="content-standings" class="hidden">
+            <div class="bg-white rounded-[2rem] shadow-xl overflow-hidden border border-slate-100">
+                <table class="w-full">
                     <thead>
-                        <tr class="bg-gray-50 text-gray-500 font-bold text-[10px] uppercase border-b border-gray-100">
-                            <th class="p-3 text-left pl-4">Team</th>
-                            <th class="p-3 text-center">P</th>
-                            <th class="p-3 text-center">W</th>
-                            <th class="p-3 text-center">Pts</th>
-                            <th class="p-3 text-right pr-4">NRR</th>
+                        <tr class="bg-slate-50/50 text-slate-400 font-bold text-[10px] uppercase">
+                            <th class="py-5 px-4 text-left">Squad</th>
+                            <th class="py-5 px-2 text-center">P</th>
+                            <th class="py-5 px-2 text-center">W</th>
+                            <th class="py-5 px-2 text-center">Pts</th>
+                            <th class="py-5 px-4 text-right">NRR</th>
                         </tr>
                     </thead>
-                    <tbody id="standings-body" class="divide-y divide-gray-50"></tbody>
+                    <tbody id="standings-body" class="divide-y divide-slate-50"></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- 4. Stats Section -->
-        <div id="content-stats" class="hidden animate-fade-in space-y-5">
-            
-            <!-- Batting Card -->
-            <div class="bg-white rounded-2xl shadow-md border-t-4 border-orange-500 overflow-hidden">
-                <div class="bg-orange-50 p-3 border-b border-orange-100 flex justify-between items-center">
-                    <h3 class="font-bold text-orange-900 text-xs uppercase tracking-wider flex items-center gap-2">
-                        <span>🏏</span> Most Runs
-                    </h3>
-                </div>
-                <div id="top-batsmen" class="divide-y divide-gray-100"></div>
+        <!-- Stats Tab -->
+        <div id="content-stats" class="hidden space-y-6">
+            <div class="bg-white rounded-[2rem] p-6 shadow-xl border-l-8 border-[#4A3A8C]">
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span class="p-2 bg-indigo-50 rounded-lg">🏏</span> Top Batters
+                </h3>
+                <div id="top-batsmen" class="space-y-4"></div>
             </div>
 
-            <!-- Bowling Card -->
-            <div class="bg-white rounded-2xl shadow-md border-t-4 border-[#4A3A8C] overflow-hidden">
-                <div class="bg-indigo-50 p-3 border-b border-indigo-100 flex justify-between items-center">
-                    <h3 class="font-bold text-[#4A3A8C] text-xs uppercase tracking-wider flex items-center gap-2">
-                        <span>🎯</span> Most Wickets
-                    </h3>
-                </div>
-                <div id="top-bowlers" class="divide-y divide-gray-100"></div>
+            <div class="bg-white rounded-[2rem] p-6 shadow-xl border-l-8 border-orange-500">
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <span class="p-2 bg-orange-50 rounded-lg">🎯</span> Top Bowlers
+                </h3>
+                <div id="top-bowlers" class="space-y-4"></div>
             </div>
         </div>
     </div>
 
-    <!-- Floating Action Button -->
-    <div class="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-gray-200 z-50">
-        <button id="open-app-btn" class="w-full max-w-sm mx-auto bg-[#4A3A8C] hover:bg-[#372b6b] text-white flex items-center justify-center gap-3 py-3.5 rounded-xl shadow-lg transition-all active:scale-95 group">
-            <span class="bg-white/20 p-1.5 rounded-lg transition-colors">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-            </span>
-            <span class="font-bold text-sm tracking-wide">Open in CrickMatch App</span>
+    <!-- App Call-to-Action -->
+    <div class="fixed bottom-0 left-0 right-0 p-5 bg-white/70 backdrop-blur-xl border-t border-slate-100 z-[60]">
+        <button id="open-app-btn" class="w-full max-w-sm mx-auto bg-[#1e1b4b] hover:bg-black text-white flex items-center justify-between p-2 pl-6 rounded-2xl shadow-2xl shadow-indigo-200 transition-all group">
+            <span class="font-bold text-sm tracking-tight">Experience Live in App</span>
+            <div class="bg-white/10 p-3 rounded-xl group-hover:bg-white/20 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </div>
         </button>
     </div>
 
-    <!-- Firebase & Logic (No Changes to Logic) -->
+    <!-- Scripts -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
         import { getFirestore, doc, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
@@ -200,7 +209,6 @@
         const ownerId = params.get('ownerId');
 
         if (tId && ownerId) {
-            // Tournament Meta
             onSnapshot(doc(db, "users", ownerId, "tournaments", tId), (d) => {
                 if(d.exists()){
                     const data = d.data();
@@ -209,82 +217,60 @@
                 }
             });
 
-            // Fixtures (Updated Visual Design only)
+            // Fixtures Design (Unique & Modern)
             onSnapshot(query(collection(db, "users", ownerId, "tournaments", tId, "fixtures"), orderBy("matchOrder")), (snap) => {
                 const list = document.getElementById('fixtures-list');
                 list.innerHTML = '';
                 snap.forEach(doc => {
                     const f = doc.data();
-                    let statusClass = "bg-gray-100 text-gray-500";
-                    let statusText = f.status;
-                    let livePulse = "";
-                    let borderClass = "border-l-4 border-gray-200";
-
-                    if(f.status === 'Live'){ 
-                        statusClass = "bg-red-500 text-white"; 
-                        statusText = "LIVE";
-                        livePulse = "live-pulse border-red-500";
-                        borderClass = "border-l-4 border-red-500";
-                    }
-                    else if(f.status === 'Completed'){ 
-                        statusClass = "bg-green-500 text-white"; 
-                        statusText = "DONE";
-                        borderClass = "border-l-4 border-green-500";
-                    }
+                    let statusColor = "bg-slate-100 text-slate-400";
+                    let liveClass = "";
+                    if(f.status === 'Live') { statusColor = "status-live"; liveClass = "Live"; }
+                    else if(f.status === 'Completed') { statusColor = "bg-emerald-500 text-white"; }
 
                     list.innerHTML += `
-                        <div class="bg-white rounded-xl shadow-sm p-0 relative overflow-hidden ${borderClass} transition-transform active:scale-[0.98]">
-                            <div class="px-5 py-3 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
-                                <span class="text-[10px] font-black text-gray-400 tracking-widest uppercase">MATCH ${f.matchNo}</span>
-                                <span class="text-[9px] px-2 py-0.5 rounded font-bold uppercase tracking-wide ${statusClass} ${livePulse}">${statusText}</span>
+                        <div class="match-card shadow-lg shadow-slate-200/50">
+                            <div class="px-6 py-3 flex justify-between items-center bg-slate-50/50 border-b border-slate-100">
+                                <span class="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Match ${f.matchNo}</span>
+                                <span class="text-[8px] px-3 py-1 rounded-full font-black uppercase tracking-widest ${statusColor}">${f.status}</span>
                             </div>
-                            <div class="p-5">
-                                <div class="flex items-center justify-between gap-2">
-                                    <div class="flex-1 flex flex-col items-center gap-2">
-                                        <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-lg font-black text-gray-600">
-                                            ${f.teamA_name.charAt(0)}
-                                        </div>
-                                        <span class="text-xs font-bold text-gray-800 text-center leading-tight">${f.teamA_name}</span>
-                                    </div>
-                                    
-                                    <div class="font-black text-gray-200 text-xl italic">VS</div>
-
-                                    <div class="flex-1 flex flex-col items-center gap-2">
-                                        <div class="w-12 h-12 bg-gray-100 rounded-xl flex items-center justify-center text-lg font-black text-gray-600">
-                                            ${f.teamB_name.charAt(0)}
-                                        </div>
-                                        <span class="text-xs font-bold text-gray-800 text-center leading-tight">${f.teamB_name}</span>
-                                    </div>
+                            <div class="p-8 flex items-center justify-between">
+                                <div class="flex-1 flex flex-col items-center gap-3">
+                                    <div class="team-initial bg-indigo-50 text-[#4A3A8C]">${f.teamA_name.charAt(0)}</div>
+                                    <span class="text-xs font-black text-slate-800 text-center uppercase tracking-tight">${f.teamA_name}</span>
+                                </div>
+                                <div class="vs-badge">VS</div>
+                                <div class="flex-1 flex flex-col items-center gap-3">
+                                    <div class="team-initial bg-orange-50 text-orange-600">${f.teamB_name.charAt(0)}</div>
+                                    <span class="text-xs font-black text-slate-800 text-center uppercase tracking-tight">${f.teamB_name}</span>
                                 </div>
                             </div>
                             ${f.resultSummary ? `
-                                <div class="bg-indigo-50/50 px-4 py-2 border-t border-indigo-50">
-                                    <p class="text-center text-[10px] font-bold text-[#4A3A8C]">
-                                        ${f.resultSummary}
-                                    </p>
+                                <div class="mx-6 mb-6 p-3 bg-indigo-50/50 rounded-2xl border border-indigo-100/50 text-center">
+                                    <p class="text-[10px] font-bold text-[#4A3A8C] leading-relaxed">${f.resultSummary}</p>
                                 </div>
                             ` : ''}
                         </div>`;
                 });
             });
 
-            // Teams
+            // Teams (Unique Card Design)
             onSnapshot(collection(db, "users", ownerId, "tournaments", tId, "teams"), (snap) => {
                 const list = document.getElementById('teams-list');
                 list.innerHTML = '';
                 snap.forEach(doc => {
                     const t = doc.data();
                     list.innerHTML += `
-                        <div class="bg-white rounded-2xl p-4 flex flex-col items-center justify-center gap-2 shadow-sm border border-gray-100">
-                            <div class="w-12 h-12 bg-[#4A3A8C] text-white rounded-xl flex items-center justify-center text-lg font-black shadow-lg shadow-purple-200">
+                        <div class="bg-white rounded-3xl p-5 flex flex-col items-center gap-3 shadow-md border border-slate-50">
+                            <div class="w-16 h-16 bg-gradient-to-br from-indigo-50 to-white text-[#4A3A8C] rounded-2xl flex items-center justify-center text-xl font-black shadow-inner">
                                 ${t.teamName.charAt(0)}
                             </div>
-                            <div class="font-bold text-xs text-gray-800 text-center leading-tight">${t.teamName}</div>
+                            <span class="font-bold text-xs text-slate-800 text-center">${t.teamName}</span>
                         </div>`;
                 });
             });
 
-            // Standings
+            // Standings (Premium Table)
             onSnapshot(query(collection(db, "users", ownerId, "tournaments", tId, "standings"), orderBy("points", "desc")), (snap) => {
                 const body = document.getElementById('standings-body');
                 body.innerHTML = '';
@@ -292,15 +278,17 @@
                 snap.forEach(doc => {
                     const s = doc.data();
                     body.innerHTML += `
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="p-3 pl-4 flex items-center gap-2">
-                                <span class="text-[9px] w-4 h-4 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 font-bold">${rank}</span>
-                                <span class="font-bold text-gray-700 text-xs">${s.teamName}</span>
+                        <tr class="text-slate-600">
+                            <td class="py-5 px-4">
+                                <div class="flex items-center gap-3">
+                                    <span class="rank-badge">${rank}</span>
+                                    <span class="font-bold text-slate-800 text-xs">${s.teamName}</span>
+                                </div>
                             </td>
-                            <td class="p-3 text-center text-gray-500 text-xs font-medium">${s.played}</td>
-                            <td class="p-3 text-center text-gray-500 text-xs font-medium">${s.won}</td>
-                            <td class="p-3 text-center font-black text-[#4A3A8C]">${s.points}</td>
-                            <td class="p-3 pr-4 text-right text-[10px] font-mono text-gray-400">${(s.nrr || 0).toFixed(3)}</td>
+                            <td class="py-5 px-2 text-center text-xs font-medium">${s.played}</td>
+                            <td class="py-5 px-2 text-center text-xs font-medium">${s.won}</td>
+                            <td class="py-5 px-2 text-center font-black text-[#4A3A8C]">${s.points}</td>
+                            <td class="py-5 px-4 text-right text-[10px] font-mono font-bold text-slate-400">${(s.nrr || 0).toFixed(3)}</td>
                         </tr>`;
                     rank++;
                 });
@@ -315,13 +303,13 @@
                     if(i <= 5) {
                         const p = doc.data();
                         list.innerHTML += `
-                        <div class="px-4 py-3 flex justify-between items-center hover:bg-orange-50/50 transition-colors">
-                            <div class="flex items-center gap-3">
-                                <span class="text-[10px] font-bold w-4 text-center text-gray-400">#${i}</span>
-                                <div class="font-bold text-gray-800 text-xs">${p.playerName}</div>
-                            </div>
-                            <span class="font-black text-sm text-orange-600">${p.runs}</span>
-                        </div>`;
+                            <div class="flex justify-between items-center p-1">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[10px] font-black text-slate-300 w-4">0${i}</span>
+                                    <span class="text-xs font-bold text-slate-700">${p.playerName}</span>
+                                </div>
+                                <span class="text-xs font-black text-slate-900 bg-slate-50 px-3 py-1 rounded-lg">${p.runs} <span class="text-[9px] text-slate-400 font-normal">Runs</span></span>
+                            </div>`;
                     }
                     i++;
                 });
@@ -335,13 +323,13 @@
                     if(i <= 5) {
                         const p = doc.data();
                         list.innerHTML += `
-                        <div class="px-4 py-3 flex justify-between items-center hover:bg-indigo-50/50 transition-colors">
-                            <div class="flex items-center gap-3">
-                                <span class="text-[10px] font-bold w-4 text-center text-gray-400">#${i}</span>
-                                <div class="font-bold text-gray-800 text-xs">${p.playerName}</div>
-                            </div>
-                            <span class="font-black text-sm text-[#4A3A8C]">${p.wickets}</span>
-                        </div>`;
+                            <div class="flex justify-between items-center p-1">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[10px] font-black text-slate-300 w-4">0${i}</span>
+                                    <span class="text-xs font-bold text-slate-700">${p.playerName}</span>
+                                </div>
+                                <span class="text-xs font-black text-orange-600 bg-orange-50 px-3 py-1 rounded-lg">${p.wickets} <span class="text-[9px] text-orange-300 font-normal">Wkts</span></span>
+                            </div>`;
                     }
                     i++;
                 });
@@ -353,18 +341,13 @@
         }
 
         window.switchTab = (tab) => {
-            const tabs = ['fixtures', 'teams', 'standings', 'stats'];
-            tabs.forEach(t => {
-                const content = document.getElementById(`content-${t}`);
-                const btn = document.getElementById(`tab-${t}`);
-                
-                content.classList.add('hidden');
-                btn.classList.remove('tab-active');
+            ['fixtures', 'teams', 'standings', 'stats'].forEach(t => {
+                document.getElementById(`content-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).classList.remove('tab-active');
+                document.getElementById(`tab-${t}`).classList.add('text-slate-400');
             });
-            
             document.getElementById(`content-${tab}`).classList.remove('hidden');
-            const activeBtn = document.getElementById(`tab-${tab}`);
-            activeBtn.classList.add('tab-active');
+            document.getElementById(`tab-${tab}`).classList.add('tab-active');
         };
     </script>
 </body>
