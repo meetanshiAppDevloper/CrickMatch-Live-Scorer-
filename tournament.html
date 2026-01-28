@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tournament Standings & Fixtures</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div id="main-content" class="max-w-md mx-auto pb-20">
+        <div class="bg-[#4A3A8C] text-white p-4 text-center text-xl font-bold shadow-md">
+            Tournament Dashboard
+        </div>
+        <div class="p-4">
+            <h1 id="tournament-name" class="text-2xl font-bold text-center text-gray-800 mb-4">Loading...</h1>
+            <div id="fixtures-section" class="mb-8">
+                <h2 class="font-bold text-lg mb-2 text-[#4A3A8C]">Fixtures</h2>
+                <div id="fixtures-list" class="space-y-3"></div>
+            </div>
+            <div id="standings-section">
+                <h2 class="font-bold text-lg mb-2 text-[#4A3A8C]">Points Table</h2>
+                <div class="bg-white rounded-lg shadow-sm overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-2">Team</th>
+                                <th class="p-2">P</th>
+                                <th class="p-2">W</th>
+                                <th class="p-2">Pts</th>
+                                <th class="p-2">NRR</th>
+                            </tr>
+                        </thead>
+                        <tbody id="standings-body"></tbody>
+                    </table>
+                </div>
+            </div>
+            <button id="open-app-btn" class="w-full mt-6 bg-[#4A3A8C] text-white font-bold py-3 rounded-lg">
+                Open in App
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getFirestore, doc, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: atob("QUl6YVN5RDNTUEZhNmI0dmc1bHdISzlobTd0SnV5aS05eFRyb0dJ"),
+            authDomain: "cricket-scorer-app-a9d37.firebaseapp.com",
+            projectId: "cricket-scorer-app-a9d37",
+            storageBucket: "cricket-scorer-app-a9d37.appspot.com",
+            messagingSenderId: "533428996475",
+            appId: "1:533428996475:web:58161d5066d65ad2dd15de"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const tId = urlParams.get('tournamentId');
+        const ownerId = urlParams.get('ownerId');
+
+        if (tId && ownerId) {
+            onSnapshot(doc(db, "users", ownerId, "tournaments", tId), (docSnap) => {
+                if (docSnap.exists()) document.getElementById('tournament-name').innerText = docSnap.data().name;
+            });
+
+            onSnapshot(query(collection(db, "users", ownerId, "tournaments", tId, "fixtures"), orderBy("matchOrder")), (snap) => {
+                const list = document.getElementById('fixtures-list');
+                list.innerHTML = '';
+                snap.forEach(d => {
+                    const f = d.data();
+                    list.innerHTML += `<div class="bg-white border p-3 rounded-lg flex justify-between">
+                        <span class="font-bold text-sm">${f.teamA_name} vs ${f.teamB_name}</span>
+                        <span class="text-xs px-2 py-1 bg-blue-50 rounded text-blue-700 font-bold">${f.status}</span>
+                    </div>`;
+                });
+            });
+
+            onSnapshot(query(collection(db, "users", ownerId, "tournaments", tId, "standings"), orderBy("points", "desc")), (snap) => {
+                const body = document.getElementById('standings-body');
+                body.innerHTML = '';
+                snap.forEach(d => {
+                    const s = d.data();
+                    body.innerHTML += `<tr class="border-b">
+                        <td class="p-2 font-bold">${s.teamName}</td>
+                        <td class="p-2">${s.played}</td>
+                        <td class="p-2">${s.won}</td>
+                        <td class="p-2 font-bold text-[#4A3A8C]">${s.points}</td>
+                        <td class="p-2 text-xs">${(s.nrr || 0).toFixed(3)}</td>
+                    </tr>`;
+                });
+            });
+
+            document.getElementById('open-app-btn').onclick = () => {
+                window.location.href = `cricketscorer://tournament?id=${tId}&ownerId=${ownerId}`;
+            };
+        }
+    </script>
+</body>
+</html>
