@@ -67,19 +67,28 @@
             <div id="teams-list" class="contents"></div>
         </div>
 
+        <!-- ✅ Standings Tab (Detailed Table) -->
         <div id="content-standings" class="hidden">
-            <div class="fixture-card overflow-hidden">
-                <table class="w-full text-sm">
+            <div class="fixture-card overflow-x-auto">
+                <table class="w-full text-[11px]">
                     <thead class="bg-gray-50 border-b border-gray-100">
-                        <tr class="text-gray-400 font-bold text-[10px] uppercase">
-                            <th class="p-4 text-left">Team</th>
-                            <th class="p-4 text-center">P</th>
-                            <th class="p-4 text-center">Pts</th>
-                            <th class="p-4 text-right">NRR</th>
+                        <tr class="text-gray-400 font-bold uppercase">
+                            <th class="p-3 text-left"># Team</th>
+                            <th class="p-2 text-center">P</th>
+                            <th class="p-2 text-center">W</th>
+                            <th class="p-2 text-center">L</th>
+                            <th class="p-2 text-center">D</th>
+                            <th class="p-2 text-center">NRR</th>
+                            <th class="p-3 text-right">Pts</th>
                         </tr>
                     </thead>
-                    <tbody id="standings-body" class="divide-y divide-gray-50 font-medium"></tbody>
+                    <tbody id="standings-body" class="divide-y divide-gray-50 font-semibold"></tbody>
                 </table>
+            </div>
+            <div class="mt-4 px-2 flex justify-center gap-4 text-[9px] font-bold text-gray-400 uppercase tracking-tighter">
+                <span>W: 2 Pts</span>
+                <span>D: 1 Pt</span>
+                <span>L: 0 Pts</span>
             </div>
         </div>
 
@@ -182,12 +191,31 @@
                 });
             });
 
+            // ✅ Detailed Standings Logic
             onSnapshot(query(collection(db, "users", ownerId, "tournaments", tId, "standings"), orderBy("points", "desc")), (snap) => {
                 const body = document.getElementById('standings-body');
                 body.innerHTML = '';
+                let rank = 1;
                 snap.forEach(doc => {
                     const s = doc.data();
-                    body.innerHTML += `<tr class="hover:bg-gray-50"><td class="p-4 font-bold text-xs uppercase tracking-tighter text-slate-700">${s.teamName}</td><td class="p-4 text-center text-xs text-slate-500">${s.played}</td><td class="p-4 text-center font-black text-purple-main text-xs">${s.points}</td><td class="p-4 text-right text-[10px] text-gray-300 font-mono">${(s.nrr || 0).toFixed(3)}</td></tr>`;
+                    const nrr = (s.nrr || 0).toFixed(3);
+                    const nrrColor = s.nrr >= 0 ? 'text-blue-500' : 'text-red-500';
+                    body.innerHTML += `
+                        <tr class="hover:bg-gray-50 border-b border-gray-50">
+                            <td class="p-3 text-left">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[9px] text-gray-300 font-bold">${rank}</span>
+                                    <span class="font-bold text-slate-700 uppercase tracking-tighter truncate w-20">${s.teamName}</span>
+                                </div>
+                            </td>
+                            <td class="p-2 text-center text-slate-500">${s.played || 0}</td>
+                            <td class="p-2 text-center text-slate-500">${s.won || 0}</td>
+                            <td class="p-2 text-center text-slate-500">${s.lost || 0}</td>
+                            <td class="p-2 text-center text-slate-500">${s.draw || 0}</td>
+                            <td class="p-2 text-center font-mono ${nrrColor}">${nrr}</td>
+                            <td class="p-3 text-right font-black text-purple-main text-[13px]">${s.points || 0}</td>
+                        </tr>`;
+                    rank++;
                 });
             });
 
@@ -209,40 +237,24 @@
                 window.location.href = `cricketscorer://tournament?id=${tId}&ownerId=${ownerId}`;
             };
 
-            // Global Show Players Function
             window.showPlayers = async (teamId, teamName) => {
                 const modal = document.getElementById('player-modal');
                 const listContainer = document.getElementById('player-list');
                 const title = document.getElementById('modal-team-name');
-                
                 title.innerText = teamName;
                 listContainer.innerHTML = '<div class="text-center text-gray-400 text-xs py-4">Loading players...</div>';
                 modal.classList.add('modal-show');
                 document.body.style.overflow = 'hidden';
-
                 try {
                     const q = collection(db, "users", ownerId, "tournaments", tId, "teams", teamId, "players");
                     const snap = await getDocs(q);
                     listContainer.innerHTML = '';
-                    
-                    if(snap.empty) {
-                        listContainer.innerHTML = '<div class="text-center text-gray-400 text-xs py-4">No players added.</div>';
-                        return;
-                    }
-
+                    if(snap.empty) { listContainer.innerHTML = '<div class="text-center text-gray-400 text-xs py-4">No players added.</div>'; return; }
                     snap.forEach(doc => {
                         const p = doc.data();
-                        listContainer.innerHTML += `
-                            <div class="bg-gray-50 p-3 rounded-xl border border-gray-100 flex items-center gap-3">
-                                <div class="w-6 h-6 bg-purple-100 text-purple-main text-[10px] font-bold rounded-full flex items-center justify-center">
-                                    ${p.playerName.charAt(0)}
-                                </div>
-                                <span class="text-xs font-semibold text-gray-700 uppercase">${p.playerName}</span>
-                            </div>`;
+                        listContainer.innerHTML += `<div class="bg-gray-50 p-3 rounded-xl border border-gray-100 flex items-center gap-3"><div class="w-6 h-6 bg-purple-100 text-purple-main text-[10px] font-bold rounded-full flex items-center justify-center">${p.playerName.charAt(0)}</div><span class="text-xs font-semibold text-gray-700 uppercase">${p.playerName}</span></div>`;
                     });
-                } catch (e) {
-                    listContainer.innerHTML = '<div class="text-center text-red-400 text-xs py-4">Error loading players.</div>';
-                }
+                } catch (e) { listContainer.innerHTML = '<div class="text-center text-red-400 text-xs py-4">Error loading players.</div>'; }
             };
 
             window.closeModal = () => {
