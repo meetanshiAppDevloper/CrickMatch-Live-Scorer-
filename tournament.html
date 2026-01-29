@@ -21,7 +21,6 @@
         }
         .top-strip { height: 4px; width: 100%; }
         
-        /* Updated Team Container - No background, larger logo */
         .team-box {
             background: transparent;
             border: none;
@@ -31,13 +30,13 @@
             width: 110px;
         }
         .team-logo-circle {
-            width: 65px; height: 65px; /* Box size increased */
+            width: 65px; height: 65px;
             background: white;
             border-radius: 16px;
             display: flex; align-items: center; justify-content: center;
             font-weight: 800; color: #4A3A8C; border: 1.5px solid #f1f5f9;
             overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06); /* Subtle shadow for logo only */
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
         .team-logo-img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
         
@@ -52,7 +51,6 @@
 </head>
 <body class="pb-24">
 
-    <!-- Error Screen -->
     <div id="no-match-screen" class="hidden fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center p-6 text-center">
         <div class="bg-red-100 p-5 rounded-full mb-6">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -63,7 +61,6 @@
         <p class="text-gray-600 max-w-xs mx-auto">This tournament has been deleted or the link is invalid.</p>
     </div>
 
-    <!-- Main Dashboard -->
     <div id="main-dashboard">
         <div class="bg-purple-main text-white p-6 text-center shadow-lg">
             <h1 id="tournament-name" class="text-xl font-extrabold uppercase tracking-widest leading-tight">Tournament</h1>
@@ -121,7 +118,6 @@
         </div>
     </div>
 
-    <!-- Bottom Bar -->
     <div class="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-gray-100 text-center z-30">
         <button id="open-app-btn" class="w-full max-w-xs bg-black text-white py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest shadow-xl active:scale-95 transition-transform">Open in CrickMatch App</button>
     </div>
@@ -175,18 +171,24 @@
             onSnapshot(query(collection(db, "users", ownerId, "tournaments", tId, "fixtures"), orderBy("matchOrder")), (snap) => {
                 const list = document.getElementById('fixtures-list');
                 list.innerHTML = '';
+                
+                // ✅ Check if fixtures are empty
+                if (snap.empty) {
+                    list.innerHTML = `
+                        <div class="py-20 text-center flex flex-col items-center gap-3">
+                            <svg class="w-12 h-12 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <p class="text-gray-400 font-bold text-sm uppercase tracking-wider">Matches not scheduled yet</p>
+                        </div>`;
+                    return;
+                }
+
                 snap.forEach(doc => {
                     const f = doc.data();
                     const isLive = f.status === 'Live';
                     const isDone = f.status === 'Completed';
                     let stripColor = "bg-blue-400"; let badgeClass = "bg-blue-50 text-blue-600"; let actionBtn = "";
-                    if(isLive) { 
-                        stripColor = "bg-red-500"; badgeClass = "bg-red-50 text-red-600 animate-pulse"; 
-                        actionBtn = `<button onclick="viewMatch('${f.matchId}')" class="btn-action bg-red-500 uppercase">View</button>`; 
-                    } else if(isDone) { 
-                        stripColor = "bg-green-500"; badgeClass = "bg-green-600 text-white"; 
-                        actionBtn = `<button onclick="viewMatch('${f.matchId}')" class="btn-action bg-green-600 uppercase">Scorecard</button>`; 
-                    }
+                    if(isLive) { stripColor = "bg-red-500"; badgeClass = "bg-red-50 text-red-600 animate-pulse"; actionBtn = `<button onclick="viewMatch('${f.matchId}')" class="btn-action bg-red-500 uppercase">View</button>`; }
+                    else if(isDone) { stripColor = "bg-green-500"; badgeClass = "bg-green-600 text-white"; actionBtn = `<button onclick="viewMatch('${f.matchId}')" class="btn-action bg-green-600 uppercase">Scorecard</button>`; }
                     
                     list.innerHTML += `<div class="fixture-card shadow-sm"><div class="top-strip ${stripColor}"></div><div class="p-4"><div class="flex justify-between items-center mb-4"><span class="text-[10px] text-gray-400 font-extrabold uppercase">MATCH ${f.matchNo}</span><span class="${badgeClass} text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-tighter">${f.status}</span></div><div class="flex items-center justify-between px-1">
                         <div class="team-box">${getLogoHtml(f.teamA_name, f.teamA_logo)}<span class="text-[10px] font-black text-center truncate w-full uppercase text-purple-main">${f.teamA_name}</span></div>
@@ -241,14 +243,13 @@
                 const playStoreUrl = "https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch";
                 const appStoreUrl = "https://apps.apple.com/us/app/crickmatch-live-scorer/id6755029198";
                 const appScheme = `cricketscorer://tournament?id=${tId}&ownerId=${ownerId}`;
-
                 if (/android/i.test(userAgent)) {
                     window.location.href = `intent://tournament?id=${tId}&ownerId=${ownerId}#Intent;scheme=cricketscorer;package=com.meetanshi.crickmatch;S.browser_fallback_url=${playStoreUrl};end`;
                 } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
                     window.location.href = appScheme;
                     setTimeout(() => { if (!document.hidden) window.location.href = appStoreUrl; }, 2500);
                 } else {
-                    alert("Open on mobile to view in app.");
+                    alert("Please open on a mobile device.");
                 }
             };
 
@@ -282,11 +283,10 @@
         window.viewMatch = (mId) => {
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
             const playStoreUrl = "https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch";
-            const matchScheme = `cricketscorer://match?id=${mId}`;
             if (/android/i.test(userAgent)) {
                 window.location.href = `intent://match?id=${mId}#Intent;scheme=cricketscorer;package=com.meetanshi.crickmatch;S.browser_fallback_url=${playStoreUrl};end`;
             } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-                window.location.href = matchScheme;
+                window.location.href = `cricketscorer://match?id=${mId}`;
                 setTimeout(() => { if (!document.hidden) window.location.href = "https://apps.apple.com/us/app/crickmatch-live-scorer/id6755029198"; }, 2500);
             } else {
                 window.location.href = `index.html?matchId=${mId}`;
