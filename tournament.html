@@ -20,27 +20,40 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
         .top-strip { height: 4px; width: 100%; }
+        
+        /* Team Container & Logo Styling */
+        .team-box {
+            background-color: #f5f3ff;
+            border: 1px solid #ddd6fe;
+            border-radius: 16px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100px;
+        }
         .team-logo-circle {
             width: 48px; height: 48px;
-            background: #f1f5f9;
+            background: white;
             border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 800; color: #94a3b8; border: 1px solid #e2e8f0;
+            font-weight: 800; color: #4A3A8C; border: 1px solid #e2e8f0;
+            overflow: hidden;
         }
+        .team-logo-img { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
+        
         .vs-text { font-weight: 900; font-style: italic; font-size: 1.2rem; color: #cbd5e1; }
         .btn-action {
             padding: 6px 16px; border-radius: 50px; font-size: 12px; font-weight: 700;
-            color: white; transition: all 0.2s;
+            color: white; transition: all 0.2s; box-shadow: none !important;
         }
-
-        /* Modal Animation */
         .modal-show { display: flex !important; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="pb-24">
 
-    <!-- ✅ Match ID Not Found Screen (Hidden by default) -->
+    <!-- Error Screen -->
     <div id="no-match-screen" class="hidden fixed inset-0 bg-white z-[100] flex flex-col items-center justify-center p-6 text-center">
         <div class="bg-red-100 p-5 rounded-full mb-6">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -48,18 +61,16 @@
             </svg>
         </div>
         <h1 class="text-2xl font-bold text-gray-900 mb-2">Tournament Not Found</h1>
-        <p class="text-gray-600 max-w-xs mx-auto">This tournament has been deleted or the link is invalid. Please contact the organizer.</p>
+        <p class="text-gray-600 max-w-xs mx-auto">This tournament has been deleted or the link is invalid.</p>
     </div>
 
-    <!-- ✅ Main Dashboard Content -->
+    <!-- Main Dashboard -->
     <div id="main-dashboard">
-        <!-- Header -->
         <div class="bg-purple-main text-white p-6 text-center shadow-lg">
             <h1 id="tournament-name" class="text-xl font-extrabold uppercase tracking-widest">Tournament</h1>
             <p id="tournament-detail" class="text-[10px] opacity-70 mt-1 font-medium tracking-wider"></p>
         </div>
 
-        <!-- Navigation Tabs -->
         <div class="bg-white border-b sticky top-0 z-40 shadow-sm">
             <div class="flex justify-around max-w-md mx-auto">
                 <button onclick="switchTab('fixtures')" id="tab-fixtures" class="py-4 px-2 text-xs font-bold uppercase tracking-wider tab-active">Matches</button>
@@ -69,38 +80,23 @@
             </div>
         </div>
 
-        <!-- Content Area -->
         <div class="max-w-md mx-auto p-4 space-y-4">
             <div id="content-fixtures" class="space-y-4">
                 <div id="fixtures-list" class="space-y-4"></div>
             </div>
-
             <div id="content-teams" class="hidden grid grid-cols-2 gap-4">
                 <div id="teams-list" class="contents"></div>
             </div>
-
             <div id="content-standings" class="hidden">
                 <div class="fixture-card overflow-x-auto">
                     <table class="w-full text-[11px]">
                         <thead class="bg-gray-50 border-b border-gray-100">
-                            <tr class="text-gray-400 font-bold uppercase">
-                                <th class="p-3 text-left"># Team</th>
-                                <th class="p-2 text-center">P</th>
-                                <th class="p-2 text-center">W</th>
-                                <th class="p-2 text-center">L</th>
-                                <th class="p-2 text-center">D</th>
-                                <th class="p-2 text-center">NRR</th>
-                                <th class="p-3 text-right">Pts</th>
-                            </tr>
+                            <tr class="text-gray-400 font-bold uppercase"><th class="p-3 text-left"># Team</th><th class="p-2 text-center">P</th><th class="p-2 text-center">W</th><th class="p-2 text-center">L</th><th class="p-2 text-center">D</th><th class="p-2 text-center">NRR</th><th class="p-3 text-right">Pts</th></tr>
                         </thead>
                         <tbody id="standings-body" class="divide-y divide-gray-50 font-semibold"></tbody>
                     </table>
                 </div>
-                <div class="mt-4 px-2 flex justify-center gap-4 text-[9px] font-bold text-gray-400 uppercase tracking-tighter">
-                    <span>W: 2 Pts</span><span>D: 1 Pt</span><span>L: 0 Pts</span>
-                </div>
             </div>
-
             <div id="content-stats" class="hidden space-y-4 font-bold">
                 <div class="fixture-card p-5 border-t-4 border-purple-800">
                     <h3 class="text-purple-main text-xs uppercase mb-4 tracking-widest">Most Runs</h3>
@@ -114,19 +110,15 @@
         </div>
     </div>
 
-    <!-- Player List Modal -->
+    <!-- Player Modal -->
     <div id="player-modal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-6 backdrop-blur-sm">
         <div class="bg-white w-full max-w-xs rounded-3xl overflow-hidden shadow-2xl">
             <div class="bg-purple-main p-4 text-white flex justify-between items-center">
                 <h3 id="modal-team-name" class="font-bold uppercase text-sm tracking-widest">Team Players</h3>
-                <button onclick="closeModal()" class="bg-white/20 hover:bg-white/30 rounded-full p-1 transition">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
+                <button onclick="closeModal()" class="bg-white/20 rounded-full p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
             </div>
             <div id="player-list" class="p-4 max-h-[60vh] overflow-y-auto space-y-2"></div>
-            <div class="p-4 bg-gray-50 border-t">
-                <button onclick="closeModal()" class="w-full bg-purple-main text-white py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest">Close</button>
-            </div>
+            <div class="p-4 bg-gray-50 border-t"><button onclick="closeModal()" class="w-full bg-purple-main text-white py-2.5 rounded-xl text-xs font-bold uppercase tracking-widest">Close</button></div>
         </div>
     </div>
 
@@ -157,17 +149,29 @@
         const tId = params.get('tournamentId');
         const ownerId = params.get('ownerId');
 
+        // ✅ GitHub Image Helper Functions
+        const getLogoUrl = (path) => {
+            if (!path) return null;
+            const githubBase = "https://meetanshiappdevloper.github.io/CrickMatch-Live-Scorer-/";
+            return githubBase + path;
+        };
+
+        const getLogoHtml = (name, path) => {
+            const url = getLogoUrl(path);
+            if (url) {
+                return `<div class="team-logo-circle mb-2"><img src="${url}" class="team-logo-img" onerror="this.parentElement.innerHTML='${name.charAt(0)}';"></div>`;
+            }
+            return `<div class="team-logo-circle mb-2">${name.charAt(0)}</div>`;
+        };
+
         if (tId && ownerId) {
-            // ✅ Listen for Tournament Document
             onSnapshot(doc(db, "users", ownerId, "tournaments", tId), (d) => {
                 if(d.exists()){
                     const data = d.data();
                     document.getElementById('tournament-name').innerText = data.name;
                     document.getElementById('tournament-detail').innerText = `${data.groundName} • ${data.city}`;
                 } else {
-                    // 🔥 જો ટુર્નામેન્ટ ડિલીટ થઈ જાય તો
                     document.getElementById('main-dashboard').classList.add('hidden');
-                    document.getElementById('open-app-btn').parentElement.classList.add('hidden');
                     document.getElementById('no-match-screen').classList.remove('hidden');
                 }
             });
@@ -181,8 +185,13 @@
                     const isDone = f.status === 'Completed';
                     let stripColor = "bg-blue-400"; let badgeClass = "bg-blue-50 text-blue-600"; let actionBtn = "";
                     if(isLive) { stripColor = "bg-red-500"; badgeClass = "bg-red-50 text-red-600 animate-pulse"; actionBtn = `<button onclick="viewMatch('${f.matchId}')" class="btn-action bg-red-500 uppercase">View</button>`; }
-                    else if(isDone) { stripColor = "bg-green-500"; badgeClass = "bg-green-50 text-green-600"; actionBtn = `<button onclick="viewMatch('${f.matchId}')" class="btn-action bg-green-600 uppercase">Scorecard</button>`; }
-                    list.innerHTML += `<div class="fixture-card shadow-sm"><div class="top-strip ${stripColor}"></div><div class="p-4"><div class="flex justify-between items-center mb-4"><span class="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider">MATCH ${f.matchNo}</span><span class="${badgeClass} text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-tighter">${f.status}</span></div><div class="flex items-center justify-between px-2"><div class="flex flex-col items-center w-24"><div class="team-logo-circle mb-2">${f.teamA_name.charAt(0)}</div><span class="text-[11px] font-bold text-center truncate w-full uppercase">${f.teamA_name}</span></div><div class="vs-text italic">VS</div><div class="flex flex-col items-center w-24"><div class="team-logo-circle mb-2">${f.teamB_name.charAt(0)}</div><span class="text-[11px] font-bold text-center truncate w-full uppercase">${f.teamB_name}</span></div></div>${f.resultSummary ? `<div class="mt-4 pt-3 border-t border-dashed border-gray-100 text-center text-[10px] text-purple-main font-bold italic">${f.resultSummary}</div>` : ''}<div class="mt-4 flex justify-between items-center pt-2"><div class="text-[9px] font-bold text-gray-400">${f.matchDate || 'TBD'} • ${f.matchTime || ''}</div>${actionBtn}</div></div></div>`;
+                    else if(isDone) { stripColor = "bg-green-500"; badgeClass = "bg-green-600 text-white"; actionBtn = `<button onclick="viewMatch('${f.matchId}')" class="btn-action bg-green-600 uppercase">Scorecard</button>`; }
+                    
+                    list.innerHTML += `<div class="fixture-card shadow-sm"><div class="top-strip ${stripColor}"></div><div class="p-4"><div class="flex justify-between items-center mb-4"><span class="text-[10px] text-gray-400 font-extrabold uppercase">MATCH ${f.matchNo}</span><span class="${badgeClass} text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-tighter">${f.status}</span></div><div class="flex items-center justify-between px-1">
+                        <div class="team-box">${getLogoHtml(f.teamA_name, f.teamA_logo)}<span class="text-[10px] font-black text-center truncate w-full uppercase text-purple-main">${f.teamA_name}</span></div>
+                        <div class="vs-text italic">VS</div>
+                        <div class="team-box">${getLogoHtml(f.teamB_name, f.teamB_logo)}<span class="text-[10px] font-black text-center truncate w-full uppercase text-purple-main">${f.teamB_name}</span></div>
+                    </div>${f.resultSummary ? `<div class="mt-4 pt-3 border-t border-dashed border-gray-100 text-center text-[10px] text-purple-main font-bold italic">${f.resultSummary}</div>` : ''}<div class="mt-4 flex justify-between items-center pt-2"><div class="text-[9px] font-bold text-gray-400">${f.matchDate || 'TBD'} • ${f.matchTime || ''}</div>${actionBtn}</div></div></div>`;
                 });
             });
 
@@ -191,7 +200,13 @@
                 list.innerHTML = '';
                 snap.forEach(doc => {
                     const t = doc.data();
-                    list.innerHTML += `<div onclick="showPlayers('${doc.id}', '${t.teamName.replace(/'/g, "\\'")}')" class="fixture-card p-4 flex flex-col items-center justify-center gap-2 cursor-pointer active:scale-95 transition-transform hover:border-purple-200"><div class="w-10 h-10 bg-purple-50 text-purple-main rounded-lg flex items-center justify-center font-black">${t.teamName.charAt(0)}</div><span class="text-[10px] font-bold uppercase truncate w-full text-center">${t.teamName}</span></div>`;
+                    const logoUrl = getLogoUrl(t.teamLogo);
+                    const logoHtml = logoUrl ? `<img src="${logoUrl}" class="team-logo-img" onerror="this.style.display='none'; this.parentElement.innerText='${t.teamName.charAt(0)}';">` : t.teamName.charAt(0);
+                    
+                    list.innerHTML += `<div onclick="showPlayers('${doc.id}', '${t.teamName.replace(/'/g, "\\'")}')" class="fixture-card p-4 flex flex-col items-center justify-center gap-2 cursor-pointer">
+                        <div class="w-12 h-12 bg-purple-50 text-purple-main rounded-xl flex items-center justify-center font-black overflow-hidden border border-purple-100">${logoHtml}</div>
+                        <span class="text-[10px] font-bold uppercase truncate w-full text-center">${t.teamName}</span>
+                    </div>`;
                 });
             });
 
@@ -217,34 +232,20 @@
                 snap.forEach(doc => { if(i < 5) { const p = doc.data(); list.innerHTML += `<div class="flex justify-between items-center text-xs"><span class="text-slate-600 font-medium">${p.playerName}</span><span class="bg-orange-50 text-orange-600 px-2 py-1 rounded font-black">${p.wickets}</span></div>`; i++; } });
             });
 
-           document.getElementById('open-app-btn').onclick = () => {
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    const playStoreUrl = "https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch";
-    const appStoreUrl = "https://apps.apple.com/us/app/crickmatch-live-scorer/id6755029198";
-
-    // --- Android Logic (Intent) ---
-    if (/android/i.test(userAgent)) {
-        // આ એન્ડ્રોઇડ માટે બેસ્ટ રીત છે: જો એપ હશે તો ખુલશે, નહીંતર સીધું પ્લે સ્ટોર પર જશે
-        const intentUrl = `intent://tournament?id=${tId}&ownerId=${ownerId}#Intent;scheme=cricketscorer;package=com.meetanshi.crickmatch;S.browser_fallback_url=${playStoreUrl};end`;
-        window.location.href = intentUrl;
-    } 
-    // --- iOS Logic (iPhone/iPad) ---
-    else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-        // આઇફોન માટે કસ્ટમ સ્કીમ
-        window.location.href = `cricketscorer://tournament?id=${tId}&ownerId=${ownerId}`;
-        
-        // જો ૨.૫ સેકન્ડમાં એપ ના ખુલે તો એપ સ્ટોર પર રીડાયરેક્ટ કરો
-        setTimeout(() => {
-            if (!document.hidden) {
-                window.location.href = appStoreUrl;
-            }
-        }, 2500);
-    } 
-    // --- Desktop/Other ---
-    else {
-        alert("Please open this link on your mobile device to view in the CrickMatch app.");
-    }
-};
+            document.getElementById('open-app-btn').onclick = () => {
+                const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+                const playStoreUrl = "https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch";
+                const appStoreUrl = "https://apps.apple.com/us/app/crickmatch-live-scorer/id6755029198";
+                const appScheme = `cricketscorer://tournament?id=${tId}&ownerId=${ownerId}`;
+                if (/android/i.test(userAgent)) {
+                    window.location.href = `intent://tournament?id=${tId}&ownerId=${ownerId}#Intent;scheme=cricketscorer;package=com.meetanshi.crickmatch;S.browser_fallback_url=${playStoreUrl};end`;
+                } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                    window.location.href = appScheme;
+                    setTimeout(() => { if (!document.hidden) window.location.href = appStoreUrl; }, 2500);
+                } else {
+                    alert("Please open on a mobile device.");
+                }
+            };
 
             window.showPlayers = async (teamId, teamName) => {
                 const modal = document.getElementById('player-modal');
@@ -273,20 +274,19 @@
             };
         }
 
-       window.viewMatch = (mId) => {
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    const playStoreUrl = "https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch";
+        window.viewMatch = (mId) => {
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            const playStoreUrl = "https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch";
+            if (/android/i.test(userAgent)) {
+                window.location.href = `intent://match?id=${mId}#Intent;scheme=cricketscorer;package=com.meetanshi.crickmatch;S.browser_fallback_url=${playStoreUrl};end`;
+            } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+                window.location.href = `cricketscorer://match?id=${mId}`;
+                setTimeout(() => { if (!document.hidden) window.location.href = "https://apps.apple.com/us/app/crickmatch-live-scorer/id6755029198"; }, 2500);
+            } else {
+                window.location.href = `index.html?matchId=${mId}`;
+            }
+        };
 
-    if (/android/i.test(userAgent)) {
-        window.location.href = `intent://match?id=${mId}#Intent;scheme=cricketscorer;package=com.meetanshi.crickmatch;S.browser_fallback_url=${playStoreUrl};end`;
-    } else if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
-        window.location.href = `cricketscorer://match?id=${mId}`;
-        setTimeout(() => { if (!document.hidden) window.location.href = "https://apps.apple.com/us/app/crickmatch-live-scorer/id6755029198"; }, 2500);
-    } else {
-        // ડેસ્કટોપ પર હોય તો વેબ લિંક ખોલો
-        window.location.href = `index.html?matchId=${mId}`;
-    }
-};
         window.switchTab = (tab) => {
             ['fixtures', 'teams', 'standings', 'stats'].forEach(t => {
                 document.getElementById(`content-${t}`).classList.add('hidden');
