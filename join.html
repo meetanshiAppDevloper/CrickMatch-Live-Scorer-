@@ -13,27 +13,34 @@
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-6">
 
-    <!-- ૧. PC/Desktop માટે મેસેજ (શરૂઆતમાં છુપાયેલું) -->
+    <!-- 1. PC/Desktop Message (Hidden by default) -->
     <div id="pc-error" class="hidden bg-white p-8 rounded-3xl shadow-xl max-w-sm w-full text-center">
         <div class="text-5xl mb-4">📱</div>
-        <h1 class="text-xl font-bold mb-2">Mobile Only Link</h1>
-        <p class="text-gray-500 text-sm mb-4">તમે આ લિંક માત્ર મોબાઈલમાં જ ખોલી શકો છો. મહેરબાની કરીને તમારા મોબાઈલ ફોન પર આ લિંક ઓપન કરો.</p>
-        <div class="p-3 bg-yellow-50 text-yellow-700 text-[10px] rounded-lg border border-yellow-100">
-            Please open this link on your mobile device to join the tournament.
+        <h1 class="text-xl font-bold mb-2 text-gray-800">Mobile Only Link</h1>
+        <p class="text-gray-500 text-sm mb-4">
+            This invitation link can only be opened on a mobile device. 
+            Please open this URL on your smartphone to join the tournament.
+        </p>
+        <div class="p-3 bg-yellow-50 text-yellow-700 text-[11px] rounded-lg border border-yellow-100 font-medium">
+            Scan the QR code or copy-paste this link into your mobile browser.
         </div>
     </div>
 
-    <!-- ૨. મોબાઈલ માટે મેઈન કાર્ડ -->
+    <!-- 2. Mobile Main Card -->
     <div id="mobile-content" class="bg-white p-8 rounded-3xl shadow-xl max-w-sm w-full text-center">
         <div class="text-4xl mb-4 text-purple-800">🏏</div>
         <h1 class="text-xl font-bold mb-2 text-gray-800">Join as Co-Scorer</h1>
-        <p class="text-gray-500 text-sm mb-8">Click below to open the CrickMatch app and join this tournament.</p>
+        <p class="text-gray-500 text-sm mb-8">
+            Click the button below to open the CrickMatch app and start scoring for this tournament.
+        </p>
         
         <button id="joinBtn" class="w-full bg-[#4A3A8C] hover:bg-[#3b2e70] text-white font-bold py-4 rounded-2xl mb-4 shadow-lg active:scale-95 transition-transform">
             Open App to Join
         </button>
         
-        <p class="text-[10px] text-gray-400">If CrickMatch is not installed, you will be redirected to the Store.</p>
+        <p class="text-[10px] text-gray-400">
+            If CrickMatch is not installed, you will be redirected to the Play Store or App Store.
+        </p>
     </div>
 
     <script>
@@ -41,7 +48,7 @@
         const tId = urlParams.get('id');
         const userAgent = navigator.userAgent || navigator.vendor || window.opera;
 
-        // --- PC Detection ---
+        // --- PC/Desktop Detection ---
         const isMobile = /android|iphone|ipad|ipod/i.test(userAgent);
         
         if (!isMobile) {
@@ -51,17 +58,16 @@
 
         document.getElementById('joinBtn').onclick = () => {
             if (!tId) {
-                alert("Invalid Link: Tournament ID missing.");
+                alert("Invalid Invitation: Tournament ID is missing.");
                 return;
             }
 
             const playStoreUrl = "https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch";
             const appStoreUrl = "https://apps.apple.com/us/app/crickmatch-live-scorer/id6755029198";
 
-            // --- Android Logic (Automatic Fallback) ---
+            // --- Android Logic (Using Intent for better app detection) ---
             if (/android/i.test(userAgent)) {
-                // આ ઇન્ટેન્ટ સીધી એપ ખોલશે, જો એપ નહીં હોય તો બ્રાઉઝર પોતે પ્લે સ્ટોર ખોલી દેશે.
-                // આનાથી પ્લે સ્ટોર પાછળ ખુલ્લું નહીં રહે.
+                // This intent will try to open the app, if not found, it opens the play store automatically
                 const intentUrl = `intent://join?id=${tId}#Intent;scheme=cricketscorer;package=com.meetanshi.crickmatch;S.browser_fallback_url=${playStoreUrl};end`;
                 window.location.href = intentUrl;
             } 
@@ -69,7 +75,7 @@
             else if (/iPad|iPhone|iPod/.test(userAgent)) {
                 window.location.href = `cricketscorer://join?id=${tId}`;
                 
-                // જો ૨.૫ સેકન્ડમાં એપ ના ખુલે તો એપ સ્ટોર પર જશે
+                // Fallback to App Store if app doesn't open within 2.5 seconds
                 setTimeout(() => {
                     if (!document.hidden) {
                         window.location.href = appStoreUrl;
