@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Join Tournament - CrickMatch</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-6">
+    <div class="bg-white p-8 rounded-3xl shadow-xl max-w-sm w-full text-center">
+        <div class="text-4xl mb-4">🏏</div>
+        <h1 class="text-xl font-bold mb-2">Join Tournament</h1>
+        <p class="text-gray-500 text-sm mb-8">Click the button below to join as a co-scorer in the CrickMatch app.</p>
+        
+        <button id="joinBtn" class="w-full bg-[#4A3A8C] text-white font-bold py-4 rounded-2xl mb-4 shadow-lg">
+            Open App to Join
+        </button>
+        
+        <p class="text-[10px] text-gray-400">If app is not installed, please download it from Play Store.</p>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const tId = urlParams.get('id');
+
+        document.getElementById('joinBtn').onclick = () => {
+            if (tId) {
+                // એપ ખોલવાનો પ્રયત્ન કરો
+                window.location.href = `cricketscorer://join?id=${tId}`;
+                
+                // જો એપ ના હોય તો ૩ સેકન્ડ પછી સ્ટોર પર મોકલો
+                setTimeout(() => {
+                    window.location.href = "https://play.google.com/store/apps/details?id=com.meetanshi.crickmatch";
+                }, 3000);
+            }
+        };
+    </script>
+</body>
+</html>
